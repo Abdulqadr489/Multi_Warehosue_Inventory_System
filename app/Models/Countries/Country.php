@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Models\Countreis;
+namespace App\Models\Countries;
 
 use App\Models\Warehouses\Warehouse;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 

@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Products;
 
-use App\Models\InventoryTransactions\InventoryTransaction;
+use App\Http\Controllers\Controller;
+use App\Models\Product\Product;
 use Illuminate\Http\Request;
 
-class InventoryTransactionController extends Controller
+class ProductController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -34,7 +35,7 @@ class InventoryTransactionController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(InventoryTransaction $inventoryTransaction)
+    public function show(Product $product)
     {
         //
     }
@@ -42,7 +43,7 @@ class InventoryTransactionController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(InventoryTransaction $inventoryTransaction)
+    public function edit(Product $product)
     {
         //
     }
@@ -50,7 +51,7 @@ class InventoryTransactionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, InventoryTransaction $inventoryTransaction)
+    public function update(Request $request, Product $product)
     {
         //
     }
@@ -58,7 +59,7 @@ class InventoryTransactionController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(InventoryTransaction $inventoryTransaction)
+    public function destroy(Product $product)
     {
         //
     }

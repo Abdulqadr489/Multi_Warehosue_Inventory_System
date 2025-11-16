@@ -2,7 +2,7 @@
 
 namespace App\Models\Warehouses;
 
-use App\Models\Countreis\Country;
+use App\Models\Countries\Country;
 use App\Models\Inventories\Inventory;
 use App\Models\InventoryTransactions\InventoryTransaction;
 use Illuminate\Database\Eloquent\Model;

@@ -1,18 +1,19 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Inventories;
 
-use App\Models\Suppliers\Supplier;
+use App\Http\Controllers\Controller;
+use App\Models\InventoryTransactions\InventoryTransaction;
 use Illuminate\Http\Request;
 
-class SupplierController extends Controller
+class InventoryTransactionController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+
     }
 
     /**
@@ -34,7 +35,7 @@ class SupplierController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Supplier $supplier)
+    public function show(InventoryTransaction $inventoryTransaction)
     {
         //
     }
@@ -42,7 +43,7 @@ class SupplierController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Supplier $supplier)
+    public function edit(InventoryTransaction $inventoryTransaction)
     {
         //
     }
@@ -50,7 +51,7 @@ class SupplierController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Supplier $supplier)
+    public function update(Request $request, InventoryTransaction $inventoryTransaction)
     {
         //
     }
@@ -58,7 +59,7 @@ class SupplierController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Supplier $supplier)
+    public function destroy(InventoryTransaction $inventoryTransaction)
     {
         //
     }
