@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Models\InventoryTransactions;
+namespace App\Models\Inventories;
 
 use App\Models\Product\Product;
 use App\Models\Suppliers\Supplier;
 use App\Models\User;
 use App\Models\Warehouses\Warehouse;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -44,7 +45,7 @@ class InventoryTransaction extends Model
     }
 
 
-    public function user()
+    public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }

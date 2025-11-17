@@ -4,8 +4,7 @@ namespace App\Models\Warehouses;
 
 use App\Models\Countries\Country;
 use App\Models\Inventories\Inventory;
-use App\Models\InventoryTransactions\InventoryTransaction;
-use App\Repositories\Traits\SearchAndSort;
+use App\Models\Inventories\InventoryTransaction;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;

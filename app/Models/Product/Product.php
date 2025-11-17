@@ -3,8 +3,7 @@
 namespace App\Models\Product;
 
 use App\Models\Inventories\Inventory;
-use App\Models\InventoryTransactions\InventoryTransaction;
-use App\Models\Suppliers\Supplier;
+use App\Models\Inventories\InventoryTransaction;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
