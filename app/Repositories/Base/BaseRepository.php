@@ -24,7 +24,12 @@ abstract class BaseRepository
         $this->model = $model;
     }
 
-    public function paginateWithFilters(int $perPage = 10, array $filters = [])
+    public function paginate(int $perPage = 10)
+    {
+        return $this->paginateWithFilters([], $perPage);
+    }
+
+    public function paginateWithFilters(array $filters = [], int $perPage = 10)
     {
         $query = $this->buildQueryFilters($filters);
 
@@ -33,17 +38,17 @@ abstract class BaseRepository
 
     public function find(int $id): ?Model
     {
-        return $this->model->find($id);
+        return $this->model->newQuery()->find($id);
     }
 
     public function create(array $data): Model
     {
-        return $this->model->create($data);
+        return $this->model->newQuery()->create($data);
     }
 
     public function update(Model $model, array $data): Model
     {
-        $model->update($data);
+        $model->fill($data);
         $model->save();
 
         return $model;

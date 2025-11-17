@@ -5,6 +5,7 @@ namespace App\Services\Countries;
 use App\Models\Countries\Country;
 use App\Repositories\Countries\CountryRepository;
 use App\Repositories\Countries\CountryRepositoryInterface;
+use Illuminate\Support\Facades\DB;
 
 class CountryService
 {
@@ -12,24 +13,33 @@ class CountryService
     {
 
     }
+
     public function list(array $filters = [], int $perPage = 15)
     {
-        return $this->countries->paginateWithFilters($perPage, $filters);
+        return $this->countries->paginateWithFilters($filters,$perPage);
     }
 
-    public function create(array $data)
+    public function create(array $data): Country
     {
-        return $this->countries->create($data);
+        return DB::transaction(function () use ($data) {
+            return $this->countries->create($data);
+        });
     }
 
-    public function update(Country $country, array $data)
+    public function update(Country $country, array $data): Country
     {
-         return $this->countries->update($country, $data);
+        return DB::transaction(function () use ($country, $data) {
+            $this->countries->update($country, $data);
+
+            return $country->fresh();
+        });
     }
 
-    public function delete(Country $country):void
+    public function delete(Country $country)
     {
-        $this->countries->delete($country);
+        return DB::transaction(function () use ($country) {
+            return $this->countries->delete($country);
+        });
     }
 
 }

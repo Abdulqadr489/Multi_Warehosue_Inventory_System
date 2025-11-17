@@ -3,64 +3,84 @@
 namespace App\Http\Controllers\Products;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\BaseList\BaseListRequest;
+use App\Http\Requests\Products\CreateProductRequest;
+use App\Http\Requests\Products\UpdateProductRequest;
 use App\Models\Product\Product;
+use App\Repositories\Traits\ApiResponse;
+use App\Services\Products\ProductService;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    use ApiResponse;
+
+    public function __construct(protected ProductService $productService)
     {
-        //
+
+    }
+    public function index(BaseListRequest $request)
+    {
+        try {
+            $perPage = $request->perPage();
+            $filters = $request->validated();
+
+            $products = $this->productService->list($filters, $perPage);
+            return $this->success($products, 'Product fetched successfully.');
+        }catch (\Exception $e){
+            return $this->error("Error", $e->getMessage());
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(CreateProductRequest $request)
     {
-        //
+        try {
+            $validated = $request->validated();
+            $product = $this->productService->create($validated);
+            return $this->success($product, 'Product created successfully.',201);
+        }catch (\Exception $e){
+            return $this->error("Error",500, $e->getMessage());
+        }
+
     }
 
-    /**
-     * Display the specified resource.
-     */
+
     public function show(Product $product)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+
     public function edit(Product $product)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Product $product)
+    public function update(UpdateProductRequest $request, Product $product)
     {
-        //
+        try {
+            $validated = $request->validated();
+            $product = $this->productService->update($product,$validated);
+            return $this->success($product, 'Product updated successfully.');
+        }catch (\Exception $e){
+            return $this->error("Error", 500 ,$e->getMessage());
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+
     public function destroy(Product $product)
     {
-        //
+        try {
+            $this->productService->delete($product);
+            return $this->success($product, 'Product deleted successfully.');
+        }catch (\Exception $e){
+            return $this->error("Error", $e->getMessage());
+        }
     }
 }

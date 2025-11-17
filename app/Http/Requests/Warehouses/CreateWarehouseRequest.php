@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Warehouses;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CreateWarehouseRequest extends FormRequest
 {
@@ -11,18 +12,20 @@ class CreateWarehouseRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
+
     public function rules(): array
     {
         return [
-            //
+            "name" => ["required", "string", "max:255"],
+            "location" => ["required", "string", "max:255"],
+            "country_id" => [
+                "required",
+                "integer",
+                Rule::exists('countries', 'id')->whereNull('deleted_at'),
+            ],
         ];
     }
 }

@@ -22,18 +22,14 @@ class CountryController extends Controller
     {
 
     }
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index(BaseListRequest $request):JsonResponse
     {
         try {
-            $validated = $request->listParams();
+            $perPage = $request->perPage();
+            $filters = $request->filters();
 
-
-            $filters = $request->only(['search', 'sort_by', 'sort_dir']);
-
-            $countries = $this->countryService->list($filters, $validated['per_page']);
+            $countries = $this->countryService->list($filters, $perPage);
 
             return $this->success($countries, 'Countries fetched successfully.');
         } catch (\Throwable $e) {
@@ -45,36 +41,23 @@ class CountryController extends Controller
         }
     }
 
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(CreateCountryRequest $request)
     {
         try {
-            DB::beginTransaction();
             $validated = $request->validated();
             $country=$this->countryService->create($validated);
-            DB::commit();
             return $this->success($country,"Successfully Created","201");
         }catch (\Exception $exception){
-            DB::rollBack();
             return $this->error($exception->getMessage());
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(UpdateCountryRequest $country)
     {
         //
     }
 
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateCountryRequest $request, Country $country)
     {
         try {
@@ -89,18 +72,12 @@ class CountryController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Country $country)
     {
         try {
-            DB::beginTransaction();
             $country=$this->countryService->delete($country);
-            DB::commit();
             return $this->success($country,"Successfully Deleted","201");
         }catch (\Exception $exception){
-            DB::rollBack();
             return $this->error($exception->getMessage());
 
         }
