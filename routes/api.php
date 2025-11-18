@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Countries\CountryController;
+use App\Http\Controllers\Inventories\InventoryReportController;
 use App\Http\Controllers\Inventories\InventoryTransactionController;
 use App\Http\Controllers\Inventories\InventoryTransferController;
 use App\Http\Controllers\Products\ProductController;
@@ -20,5 +21,7 @@ Route::apiResource('suppliers', SupplierController::class);
 Route::middleware('auth:api')->group(function () {
     Route::apiResource('inventory_transactions', InventoryTransactionController::class)->only(['index', 'show','store']);
     Route::apiResource('inventory_transfer', InventoryTransferController::class)->only(['index', 'show','store']);
+    Route::get('inventory/global-view', [InventoryReportController::class, 'globalView']);
+
 });
 

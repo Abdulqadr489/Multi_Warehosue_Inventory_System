@@ -23,13 +23,25 @@ class InventoryService
         return $this->inventoryTransactionRepository->paginateWithFilters($filters,$per_page);
     }
 
+    public function globalView(array $filters,int $perPage)
+    {
+        $query = Inventory::query()
+            ->with(['product','warehouse.country'])
+            ->selectRaw('product_id,SUM(quantity) as total_quantity')
+            ->groupBy('product_id');
+
+
+
+
+        return $query->paginate($perPage);
+    }
+
     public function createTransaction(array $data,User $user)
     {
         return DB::transaction(function () use ($data, $user) {
            return  $this->CreateTransactionRecord($data,$user);
         });
     }
-
 
     public function transfer(array $data, User $user): array
     {
