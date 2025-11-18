@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Inventories;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BaseList\BaseListRequest;
+use App\Http\Requests\Inventories\InventoryGlobalViewRequest;
 use App\Repositories\Traits\ApiResponse;
 use App\Services\Inventories\InventoryService;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class InventoryReportController extends Controller
     public function __construct(protected InventoryService $inventoryService)
     {}
 
-    public function globalView(BaseListRequest $request)
+    public function globalView(InventoryGlobalViewRequest $request)
     {
         try {
             $filters = $request->filters();
@@ -24,20 +25,13 @@ class InventoryReportController extends Controller
 
             $result = $this->inventoryService->globalView($filters, $perPage);
 
-            return $this->success(
-                $result,
-                'Global inventory view fetched successfully.'
-            );
+            return $this->success($result, 'Global inventory view fetched successfully.');
 
         } catch (\Throwable $e) {
-            Log::error('Error fetching global inventory view', [
+            \Log::error('Error fetching global inventory view', [
                 'error' => $e->getMessage(),
             ]);
-
-            return $this->error(
-                'Failed to fetch global inventory view.',
-                500,
-                $e->getMessage()
+            return $this->error('Failed to fetch global inventory view.', 500, $e->getMessage()
             );
         }
     }

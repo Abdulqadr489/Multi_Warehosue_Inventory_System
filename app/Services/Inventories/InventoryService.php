@@ -13,35 +13,62 @@ use Illuminate\Support\Facades\DB;
 class InventoryService
 {
 
-    public function __construct(protected InventoryRepository $inventoryRepository,protected InventoryTransactionRepository $inventoryTransactionRepository)
+    public function __construct(protected InventoryRepository $inventoryRepository, protected InventoryTransactionRepository $inventoryTransactionRepository)
     {
 
     }
 
-    public function list(array $filters,int $per_page)
+    public function list(array $filters, int $per_page)
     {
-        return $this->inventoryTransactionRepository->paginateWithFilters($filters,$per_page);
+        return $this->inventoryTransactionRepository->paginateWithFilters($filters, $per_page);
     }
 
-    public function globalView(array $filters,int $perPage)
+    public function globalView(array $filters = [], int $perPage = 15)
     {
         $query = Inventory::query()
-            ->with(['product','warehouse.country'])
-            ->selectRaw('product_id,SUM(quantity) as total_quantity')
+            ->with('product')
+            ->selectRaw('product_id, SUM(quantity) as total_quantity')
             ->groupBy('product_id');
 
+        if (!empty($filters['warehouse_id'])) {
+            $query->where('warehouse_id', $filters['warehouse_id']);
+        }
 
+        if (!empty($filters['warehouse_name'])) {
+            $name = $filters['warehouse_name'];
+            $query->whereHas('warehouse', function ($q) use ($name) {
+                $q->where('name', 'like', '%' . $name . '%');
+            });
+        }
 
+        if (!empty($filters['country_id']) || !empty($filters['country_name'])) {
+            $countryId   = $filters['country_id']   ?? null;
+            $countryName = $filters['country_name'] ?? null;
 
-        return $query->paginate($perPage);
-    }
+            $query->whereHas('warehouse.country', function ($q) use ($countryId, $countryName) {
+                if (!empty($countryId)) {
+                    $q->where('id', $countryId);
+                }
+                if (!empty($countryName)) {
+                    $q->where('name', 'like', '%' . $countryName . '%');
+                }
+            });
+        }
+        $paginated = $query->paginate($perPage);
 
-    public function createTransaction(array $data,User $user)
-    {
-        return DB::transaction(function () use ($data, $user) {
-           return  $this->CreateTransactionRecord($data,$user);
+        $paginated->getCollection()->transform(function ($row) {
+            return [
+                'product_id'     => $row->product_id,
+                'product_name'   => $row->product?->name,
+                'product_sku'    => $row->product?->sku,
+                'total_quantity' => (float) $row->total_quantity,
+            ];
         });
+
+        return $paginated;
     }
+
+
 
     public function transfer(array $data, User $user): array
     {
@@ -80,6 +107,14 @@ class InventoryService
                 'from_transaction' => $outTransaction,
                 'to_transaction'   => $inTransaction,
             ];
+        });
+    }
+
+
+    public function createTransaction(array $data,User $user)
+    {
+        return DB::transaction(function () use ($data, $user) {
+            return  $this->CreateTransactionRecord($data,$user);
         });
     }
 
