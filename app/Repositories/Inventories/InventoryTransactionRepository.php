@@ -12,6 +12,17 @@ class InventoryTransactionRepository extends BaseRepository
     {
         parent::__construct($model);
 
+        $this->select = [
+            'id',
+            'product_id',
+            'warehouse_id',
+            'supplier_id',
+            'quantity',
+            'transaction_type',
+            'date',
+            'created_by',
+        ];
+
         $this->searchable = [
             'transaction_type',
             'quantity',
@@ -35,10 +46,11 @@ class InventoryTransactionRepository extends BaseRepository
         $this->defaultSortDir = 'desc';
 
         $this->with = [
-            'product',
-            'warehouse.country',
-            'supplier',
-            'creator',
+            'product:id,name,sku',
+            'warehouse:id,name,location,country_id',
+            'warehouse.country:id,name,code',
+            'supplier:id,name,contact_info',
+            'creator:id,name,email',
         ];
 
 
@@ -47,4 +59,5 @@ class InventoryTransactionRepository extends BaseRepository
             'warehouse_name' => ['warehouse', 'name'],
         ];
     }
+
 }

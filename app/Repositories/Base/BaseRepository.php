@@ -14,19 +14,17 @@ abstract class BaseRepository
 
     protected array $searchable = [];
     protected array $searchableRelations = [];
+
+    protected array $sortableRelations =[];
     protected array $sortable = ['id', 'created_at'];
     protected ?string $defaultSortBy = 'id';
     protected string $defaultSortDir = 'asc';
     protected array $with = [];
 
+    protected array $select=['*'];
     public function __construct(Model $model)
     {
         $this->model = $model;
-    }
-
-    public function paginate(int $perPage = 10)
-    {
-        return $this->paginateWithFilters([], $perPage);
     }
 
     public function paginateWithFilters(array $filters = [], int $perPage = 10)

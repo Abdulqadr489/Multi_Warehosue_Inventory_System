@@ -46,6 +46,11 @@ class CreateInventoryTransferRequest extends FormRequest
                 'nullable',
                 'date',
             ],
+            'minimum_quantity'=>[
+                'required',
+                'numeric',
+                'min:0',
+            ]
 
         ];
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Inventories;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\BaseList\BaseListRequest;
 use App\Http\Requests\InventoryTransfers\CreateInventoryTransferRequest;
 use App\Repositories\Traits\ApiResponse;
 use App\Services\Inventories\InventoryService;
@@ -21,10 +22,6 @@ class InventoryTransferController extends Controller
         try {
             $validated = $request->validated();
             $user = auth('api')->user();
-            if(!$user){
-                return $this->error("Unauthenticated", 401);
-            }
-
             $result = $this->inventoryService->transfer($validated, $user);
 
             return  $this->success($result,"Inventory Transfer created successfully",201);

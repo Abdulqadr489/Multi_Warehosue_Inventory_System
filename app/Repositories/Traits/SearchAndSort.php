@@ -10,6 +10,9 @@ trait SearchAndSort
     {
         $query = $this->model->newQuery();
 
+        if(!empty($this->select)){
+            $query->select($this->select);
+        }
         if (!empty($this->with)) {
             $query->with($this->with);
         }

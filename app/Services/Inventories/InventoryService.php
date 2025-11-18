@@ -6,15 +6,21 @@ use App\Models\Inventories\Inventory;
 use App\Models\Inventories\InventoryTransaction;
 use App\Models\User;
 use App\Repositories\Inventories\InventoryRepository;
+use App\Repositories\Inventories\InventoryTransactionRepository;
 use http\Exception\RuntimeException;
 use Illuminate\Support\Facades\DB;
 
 class InventoryService
 {
 
-    public function __construct(protected InventoryRepository $inventoryRepository)
+    public function __construct(protected InventoryRepository $inventoryRepository,protected InventoryTransactionRepository $inventoryTransactionRepository)
     {
 
+    }
+
+    public function list(array $filters,int $per_page)
+    {
+        return $this->inventoryTransactionRepository->paginateWithFilters($filters,$per_page);
     }
 
     public function createTransaction(array $data,User $user)
@@ -35,8 +41,8 @@ class InventoryService
             $quantity   = (float) $data['quantity'];
             $date       = $data['date'] ?? now();
             $supplierId = $data['supplier_id'] ?? null;
+            $sourceMinQty =  $data['minimum_quantity'];
 
-            // 1) OUT from source warehouse
             $outTransaction = $this->CreateTransactionRecord([
                 'product_id'       => $productId,
                 'warehouse_id'     => $fromId,
@@ -44,9 +50,9 @@ class InventoryService
                 'quantity'         => $quantity,
                 'transaction_type' => 'OUT',
                 'date'             => $date,
+                'minimum_quantity' => $sourceMinQty,
             ], $user);
 
-            // 2) IN into destination warehouse
             $inTransaction = $this->CreateTransactionRecord([
                 'product_id'       => $productId,
                 'warehouse_id'     => $toId,
@@ -54,6 +60,8 @@ class InventoryService
                 'quantity'         => $quantity,
                 'transaction_type' => 'IN',
                 'date'             => $date,
+                'minimum_quantity'  => $sourceMinQty,
+
             ], $user);
 
             return [
@@ -71,7 +79,7 @@ class InventoryService
         $type        = strtoupper($data['transaction_type']);
         $date        = $data['date'] ?? now();
         $supplierId  = $data['supplier_id'] ?? null;
-
+        $minimumQuantity = (float) $data['minimum_quantity'];
         $inventory = $this->inventoryRepository->findProductOrUpdate($productId, $warehouseId);
 
         if ($type === 'IN') {
@@ -81,9 +89,10 @@ class InventoryService
                         $productId,
                         $warehouseId,
                         $quantity,
-                        $data['minimum_quantity'] ?? 0
+                        $minimumQuantity
                     );
             } else {
+                $inventory->minimum_quantity = $minimumQuantity;
                 $inventory->quantity += $quantity;
                 $inventory->save();
             }
@@ -93,6 +102,7 @@ class InventoryService
             }
 
             $inventory->quantity -= $quantity;
+            $inventory->minimum_quantity = $data['minimum_quantity'] ?? 0;
             $inventory->save();
         } else {
             throw new \InvalidArgumentException('Invalid transaction type, must be IN or OUT.');

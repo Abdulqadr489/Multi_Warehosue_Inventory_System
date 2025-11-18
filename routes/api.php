@@ -18,7 +18,6 @@ Route::apiResource('products', ProductController::class);
 Route::apiResource('suppliers', SupplierController::class);
 
 Route::middleware('auth:api')->group(function () {
-
     Route::apiResource('inventory_transactions', InventoryTransactionController::class)->only(['index', 'show','store']);
     Route::apiResource('inventory_transfer', InventoryTransferController::class)->only(['index', 'show','store']);
 });

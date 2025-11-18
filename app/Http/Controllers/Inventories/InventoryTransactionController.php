@@ -18,17 +18,15 @@ class InventoryTransactionController extends Controller
 
     public function __construct(
         protected InventoryService $inventoryService,
-        protected InventoryTransactionRepository $inventoryTransactionRepository
     ){}
 
     public function index(BaseListRequest $request)
     {
         try {
-            $validated = $request->validated();
             $filters=$request->filters();
             $per_page=$request->perPage();
 
-            $transactions = $this->inventoryTransactionRepository->paginateWithFilters($filters,$per_page);
+            $transactions = $this->inventoryService->list($filters,$per_page);
 
             return $this->success($transactions,"Inventory transactions fetched successfully",200);
 
@@ -45,6 +43,13 @@ class InventoryTransactionController extends Controller
         }
     }
 
+    public function show(InventoryTransaction $inventoryTransaction)
+    {
+        return $this->success(
+            $inventoryTransaction->load(['product', 'warehouse', 'supplier', 'creator']),
+            'Inventory transaction fetched successfully.'
+        );
+    }
 
     public function store(CreateInventoryTransactionRequest $request)
     {
@@ -75,25 +80,4 @@ class InventoryTransactionController extends Controller
         }
     }
 
-
-    public function show(InventoryTransaction $inventoryTransaction)
-    {
-        //
-    }
-
-    public function edit(InventoryTransaction $inventoryTransaction)
-    {
-        //
-    }
-
-    public function update(Request $request, InventoryTransaction $inventoryTransaction)
-    {
-        //
-    }
-
-
-    public function destroy(InventoryTransaction $inventoryTransaction)
-    {
-        //
-    }
 }
