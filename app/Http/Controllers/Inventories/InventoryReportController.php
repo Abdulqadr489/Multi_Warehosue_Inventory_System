@@ -35,4 +35,18 @@ class InventoryReportController extends Controller
             );
         }
     }
+
+    public function lowStock()
+    {
+        try {
+            $data = $this->inventoryService->getLowStockProduct();
+            return $this->success($data, 'Low inventory view fetched successfully.');
+        }catch (\Throwable $e){
+            \Log::error('Error fetching low stock inventory view', [
+                'error' => $e->getMessage(),
+
+            ]);
+            return $this->error('Failed to fetch low stock inventory view.', 500, $e->getMessage());
+        }
+    }
 }

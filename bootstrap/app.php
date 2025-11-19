@@ -14,6 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         //
     })
+    ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule) {
+        $schedule->command('inventory:check-low-stock')->dailyAt('00:00');
+    })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();

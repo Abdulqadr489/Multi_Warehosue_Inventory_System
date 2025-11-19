@@ -24,5 +24,6 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('inventory/global-view', [InventoryReportController::class, 'globalView']);
 
+    Route::get('reports/low_stock', [InventoryReportController::class, 'lowStock']);
 });
 
