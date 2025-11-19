@@ -33,11 +33,6 @@ class ProductController extends Controller
     }
 
 
-    public function create()
-    {
-        //
-    }
-
     public function store(CreateProductRequest $request)
     {
         try {

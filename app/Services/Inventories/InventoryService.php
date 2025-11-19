@@ -23,11 +23,6 @@ class InventoryService
         return $this->inventoryTransactionRepository->paginateWithFilters($filters, $per_page);
     }
 
-
-
-
-
-
     //create transfer between warehouses
     public function transfer(array $data, User $user): array
     {

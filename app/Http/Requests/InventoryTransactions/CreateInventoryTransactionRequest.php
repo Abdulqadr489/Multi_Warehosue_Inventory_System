@@ -48,6 +48,7 @@ class CreateInventoryTransactionRequest extends FormRequest
                 Rule::in(['IN', 'OUT']),
             ],
             'date' => [
+                'date',
                 'nullable',
                 'date',
             ],

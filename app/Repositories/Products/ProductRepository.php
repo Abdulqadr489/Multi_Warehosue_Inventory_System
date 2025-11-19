@@ -19,4 +19,6 @@ class ProductRepository extends BaseRepository
         $this->defaultSortBy = 'name';
 
     }
+
+
 }

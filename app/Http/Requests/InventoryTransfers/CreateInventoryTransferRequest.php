@@ -43,6 +43,7 @@ class CreateInventoryTransferRequest extends FormRequest
                 Rule::exists('suppliers', 'id'),
             ],
             'date' => [
+                'required',
                 'nullable',
                 'date',
             ],

@@ -17,7 +17,7 @@ class CreateCountryRequest extends FormRequest
     {
         return [
             'name'=>['required','string'],
-            'code'=>['required','string'],
+            'code' => ['required', 'string', 'max:10', 'unique:countries,code'],
         ];
     }
 }
