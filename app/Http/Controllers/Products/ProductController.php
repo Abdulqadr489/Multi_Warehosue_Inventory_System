@@ -16,9 +16,7 @@ class ProductController extends Controller
     use ApiResponse;
 
     public function __construct(protected ProductService $productService)
-    {
-
-    }
+    {}
     public function index(BaseListRequest $request)
     {
         try {
@@ -48,14 +46,11 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
-        //
+        $product = $this->productService->find($product->id);
+        return $this->success($product, 'Product fetched successfully.');
     }
 
 
-    public function edit(Product $product)
-    {
-        //
-    }
 
     public function update(UpdateProductRequest $request, Product $product)
     {

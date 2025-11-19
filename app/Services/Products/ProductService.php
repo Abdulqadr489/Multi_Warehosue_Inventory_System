@@ -19,6 +19,11 @@ class ProductService
         return $this->productRepository->paginateWithFilters($filters, $perPage);
     }
 
+    public function find(int $id): ?Product
+    {
+        return $this->productRepository->find($id);
+    }
+
     public function create(array $data)
     {
        return DB::transaction(function () use ($data) {

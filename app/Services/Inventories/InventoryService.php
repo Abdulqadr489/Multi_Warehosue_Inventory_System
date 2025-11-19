@@ -2,6 +2,7 @@
 
 namespace App\Services\Inventories;
 
+use App\Events\LowStockReached;
 use App\Models\Inventories\Inventory;
 use App\Models\Inventories\InventoryTransaction;
 use App\Models\User;
@@ -14,9 +15,7 @@ class InventoryService
 {
 
     public function __construct(protected InventoryRepository $inventoryRepository, protected InventoryTransactionRepository $inventoryTransactionRepository)
-    {
-
-    }
+    {}
 
     public function list(array $filters, int $per_page)
     {
@@ -75,52 +74,45 @@ class InventoryService
 
     protected function CreateTransactionRecord(array $data, User $user)
     {
-        $productId   = $data['product_id'];
+        $productId = $data['product_id'];
         $warehouseId = $data['warehouse_id'];
-        $quantity    = (float) $data['quantity'];
-        $type        = strtoupper($data['transaction_type']);
-        $date        = $data['date'] ?? now();
-        $supplierId  = $data['supplier_id'] ?? null;
-        $minimumQuantity = (float) $data['minimum_quantity'];
-        $inventory = $this->inventoryRepository->findProductOrUpdate($productId, $warehouseId);
+        $quantity = (float)$data['quantity'];
+        $type = strtoupper($data['transaction_type']);
+        $date = $data['date'] ?? now();
+        $supplierId = $data['supplier_id'] ?? null;
+        $minimumQuantity = (float)$data['minimum_quantity'];
 
-        if ($type === 'IN') {
-            if (!$inventory) {
-                $inventory = $this->inventoryRepository
-                    ->CreateInventory(
-                        $productId,
-                        $warehouseId,
-                        $quantity,
-                        $minimumQuantity
-                    );
-            } else {
-                $inventory->minimum_quantity = $minimumQuantity;
-                $inventory->quantity += $quantity;
-                $inventory->save();
-            }
-        } elseif ($type === 'OUT') {
-            if (!$inventory || $inventory->quantity < $quantity) {
-                throw new \RuntimeException('Insufficient stock in this warehouse.');
-            }
-
-            $inventory->quantity -= $quantity;
-            $inventory->minimum_quantity = $data['minimum_quantity'] ?? 0;
-            $inventory->save();
-        } else {
+        if (!in_array($type, ['IN', 'OUT'], true)) {
             throw new \InvalidArgumentException('Invalid transaction type, must be IN or OUT.');
         }
 
+        $inventory = $this->inventoryRepository->findProductOrUpdate($productId, $warehouseId);
+
+        if (!$inventory) {
+            $inventory = $this->inventoryRepository->CreateInventory(
+                $productId,
+                $warehouseId,
+                0,                 // start at 0, then adjust via IN/OUT
+                $minimumQuantity
+            );
+        }
+        $inventory->minimum_quantity = $minimumQuantity;
+        $inventory->save();
+
+        $this->adjustInventory($inventory, $type, $quantity);
+
         $transaction = InventoryTransaction::create([
-            'product_id'       => $productId,
-            'warehouse_id'     => $warehouseId,
-            'supplier_id'      => $supplierId,
-            'quantity'         => $quantity,
+            'product_id' => $productId,
+            'warehouse_id' => $warehouseId,
+            'supplier_id' => $supplierId,
+            'quantity' => $quantity,
             'transaction_type' => $type,
-            'date'             => $date,
-            'created_by'       => $user->id,
+            'date' => $date,
+            'created_by' => $user->id,
         ]);
 
-        return $transaction->load(['product', 'warehouse', 'supplier']);
+        return $transaction->load(['product', 'warehouse', 'supplier', 'warehouse.country', 'creator']);
+
     }
 
     //get all total stock per product in all warehouses
@@ -188,14 +180,13 @@ class InventoryService
         }
 
         return $inventories->map(function (Inventory $inventory) {
-            $product   = $inventory->product;           // may be null (bad DB, but we guard)
-            $warehouse = $inventory->warehouse;         // may be null
-            $country   = $warehouse?->country;          // null-safe
+            $product   = $inventory->product;
+            $warehouse = $inventory->warehouse;
+            $country   = $warehouse?->country;
 
             $supplierName   = null;
             $supplierContact = null;
 
-            // find latest IN transaction with a supplier for this product+warehouse
             if ($inventory->product_id && $inventory->warehouse_id) {
                 $lastInTransaction = InventoryTransaction::query()
                     ->with('supplier')
@@ -227,5 +218,27 @@ class InventoryService
         });
 
 
+    }
+
+    protected function adjustInventory(Inventory $inventory, string $type, float $quantity): Inventory
+    {
+        if ($type === 'IN') {
+            $inventory->quantity += $quantity;
+        } else {
+            if ($inventory->quantity < $quantity) {
+                throw new \RuntimeException('Insufficient stock in this warehouse.');
+            }
+            $inventory->quantity -= $quantity;
+        }
+
+        $inventory->save();
+
+        if ($inventory->quantity <= $inventory->minimum_quantity) {
+            LowStockReached::dispatch(
+                $inventory->fresh(['product', 'warehouse.country'])
+            );
+        }
+
+        return $inventory;
     }
 }
