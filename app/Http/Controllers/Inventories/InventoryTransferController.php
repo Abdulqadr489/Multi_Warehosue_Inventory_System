@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Inventories;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BaseList\BaseListRequest;
 use App\Http\Requests\InventoryTransfers\CreateInventoryTransferRequest;
+use App\Models\Inventories\Inventory;
 use App\Repositories\Traits\ApiResponse;
 use App\Services\Inventories\InventoryService;
+use Illuminate\Http\Request;
 
 class InventoryTransferController extends Controller
 {
@@ -29,4 +31,5 @@ class InventoryTransferController extends Controller
             return $this->error("Error",500,$exception->getMessage());
         }
     }
+
 }

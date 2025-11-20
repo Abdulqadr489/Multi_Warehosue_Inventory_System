@@ -1,59 +1,251 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Multi-Warehouse & Multi-Country Inventory API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Backend API for a **Multi-Warehouse, Multi-Country Inventory Management System** built with Laravel.
 
-## About Laravel
+The system manages products across multiple warehouses in different countries, with:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Full CRUD for core entities (countries, warehouses, products, suppliers)
+- Inventory tracking per warehouse
+- Inventory transfers between warehouses (even across countries)
+- Global inventory view per product
+- Daily scheduled low-stock report (email + optional Slack)
+- JWT-secured API with auto-generated documentation
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+This project is implemented as part of an interview assignment.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Tech Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- **Framework:** Laravel (API only)
+- **Auth:** JWT Authentication (`auth:api` guard)
+- **Database:** MySQL
+- **Docs:** [dedoc/scramble](https://github.com/dedoc/scramble) (OpenAPI 3, UI at `/docs/api`)
+- **Scheduler:** Laravel Scheduler & Console Commands
+- **Testing:** PHPUnit (`php artisan test`)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## Requirements & Features Overview
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Core Modules
 
-### Premium Partners
+- **Country**
+    - Fields: `id`, `name`, `code` (ISO)
+    - CRUD endpoints
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- **Warehouse**
+    - Fields: `id`, `name`, `location`, `country_id`
+    - Belongs to `Country`
+    - CRUD endpoints
 
-## Contributing
+- **Product**
+    - Fields: `id`, `name`, `sku`, `status`, `description`, `price`
+    - CRUD endpoints
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- **Supplier**
+    - Fields: `id`, `name`, `contact_info`, `address`
+    - CRUD endpoints
 
-## Code of Conduct
+- **Inventory**
+    - Fields: `id`, `product_id`, `warehouse_id`, `quantity`, `minimum_quantity`
+    - Represents stock of a product in a specific warehouse
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- **InventoryTransaction**
+    - Fields: `id`, `product_id`, `warehouse_id`, `supplier_id`, `quantity`,
+      `transaction_type` (`IN`/`OUT`), `date`, `created_by`
+    - Records stock movements (purchases, sales, adjustments)
+    - Prevents `OUT` when stock is insufficient in that warehouse
 
-## Security Vulnerabilities
+- **InventoryTransfer**
+    - Transfers stock between warehouses (even across different countries)
+    - Validates source warehouse stock before completing transfer
+    - Adjusts inventory for both source and destination warehouses
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## API Design
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+All API routes are prefixed with `/api` and protected by **JWT** authentication, except `register` & `login`.
+
+### Authentication
+
+- `POST /api/register` – Create a new user
+- `POST /api/login` – Obtain a JWT access token
+
+**Usage:**
+
+1. Call `POST /api/login` with email/password.
+2. Copy `access_token` from the response.
+3. For all subsequent requests, send:
+
+   ```http
+   Authorization: Bearer <access_token>
+   Accept: application/json
+
+## Main Endpoints
+
+> Exact request/response schemas are visible and testable in `/docs/api`.
+
+### Countries
+
+- `GET /api/countries` – List countries (supports pagination, search/sort via `BaseListRequest`)
+- `POST /api/countries` – Create country
+- `PUT /api/countries/{id}` – Update country
+- `DELETE /api/countries/{id}` – Delete country
+
+### Warehouses
+
+- `GET /api/warehouses`
+- `POST /api/warehouses`
+- `PUT /api/warehouses/{id}`
+- `DELETE /api/warehouses/{id}`
+
+### Products
+
+- `GET /api/products`
+- `POST /api/products`
+- `PUT /api/products/{id}`
+- `DELETE /api/products/{id}`
+
+### Suppliers
+
+- `GET /api/suppliers`
+- `POST /api/suppliers`
+- `PUT /api/suppliers/{id}`
+- `DELETE /api/suppliers/{id}`
+
+### Inventory Transactions
+
+- `POST /api/inventory_transactions`  
+
+Records an `IN` or `OUT` transaction:
+
+- Validates `product_id`, `warehouse_id`, `supplier_id`
+- Validates `transaction_type` ∈ `{IN, OUT}`
+- For **IN**:
+    - Increases inventory for that product/warehouse, or creates it if missing
+- For **OUT**:
+    - Checks available quantity in that warehouse
+    - Rejects with a clear error if stock is insufficient (e.g. “Insufficient stock in this warehouse.”)
+    - Otherwise, decreases quantity
+
+### Inventory Transfers
+
+- `POST /api/inventory_transfer`
+
+Transfers a quantity of a product from one warehouse to another:
+
+- Validates source warehouse stock
+- Decreases inventory in the source warehouse
+- Increases (or creates) inventory in the destination warehouse
+
+### Global Inventory View
+
+- `GET /api/inventory/global-view`
+
+Returns aggregated stock per product across all warehouses:
+
+- Aggregated total quantity per product
+- Optional filters:
+    - `country_id` or `country_name`
+    - `warehouse_id` or `warehouse_name`
+
+### Low Stock Report
+
+- `GET /api/reports/low_stock`  
+  (matches the requirement’s `GET /api/reports/low-stock`)
+
+Returns products where `quantity <= minimum_quantity` per warehouse, including:
+
+- Product Name
+- SKU
+- Current Quantity
+- Minimum Required Quantity
+- Warehouse Location
+- Country
+- Supplier Contact Information (if linked)
+
+## Project Structure
+
+Key directories and patterns:
+
+### `app/Models/`
+
+- `Country`, `Warehouse`, `Product`, `Supplier`, `Inventory`,
+  `InventoryTransaction`, `InventoryTransfer`, `User`, etc.
+
+### `app/Http/Controllers/`
+
+- Resource controllers (e.g. `Countries\CountryController`, `Warehouses\WarehouseController`, etc.)
+- Controllers are thin: they handle HTTP, authorize, validate, and delegate to services.
+
+### `app/Http/Requests/`
+
+FormRequests for validation:
+
+- `Countries/CreateCountryRequest`, `Countries/UpdateCountryRequest`
+- Similar requests for Warehouse, Product, Supplier
+- `BaseList\BaseListRequest` for list filters & pagination
+- `Inventories/InventoryGlobalViewRequest` for global view filters
+
+### `app/Repositories/`
+
+- Repository classes that encapsulate Eloquent queries
+- Used by services so controllers don’t touch DB directly
+
+### `app/Services/`
+
+Service layer for business logic:
+
+- `CountryService`, `WarehouseService`, `ProductService`, `SupplierService`
+- `InventoryService`, `InventoryTransferService`, `InventoryReportService`, etc.
+
+### `app/Console/Commands/`
+
+- `InventoryCheckLowStock` – console command to generate/send low stock report
+
+### `app/bootstrap/app.php`
+
+- Schedules the low-stock job daily at `00:00`
+
+### `app/Repositories/Traits/ApiResponse.php`
+
+- Reusable trait providing uniform JSON `success()` and `error()` responses
+
+### `tests/`
+
+- Unit & feature tests for core flows (countries CRUD, inventory transactions,inventory transfer,low stock report)
+
+## Getting Started
+
+### 1. Clone & Install Dependencies
+
+git clone https://github.com/<your-username>/<your-repo>.git
+
+cd <your-repo>
+
+composer install
+### 2. Environment Configuration
+
+Copy the example env file:
+
+- cp .env.example .env
+
+
+Generate the app key:
+
+- php artisan key:generate
+
+Generate the JWT key:
+
+- php artisan jwt:secret
+
+### 3. Database Migrations
+
+- php artisan migrate
+### 4. Run the Application
+
+- php artisan serve
+
+

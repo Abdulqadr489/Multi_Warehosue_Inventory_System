@@ -17,6 +17,7 @@
         "php-open-source-saver/jwt-auth": "^2.8"
     },
     "require-dev": {
+        "dedoc/scramble": "^0.13.4",
         "fakerphp/faker": "^1.23",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.24",

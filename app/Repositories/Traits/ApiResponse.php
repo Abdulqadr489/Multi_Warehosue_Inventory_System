@@ -16,7 +16,7 @@ trait ApiResponse
     }
 
 
-    protected function error(string $message = 'Error', int $status = 500, mixed $errors = null): JsonResponse {
+    protected function error(string $message = "Error", int $status = 500, mixed $errors = null): JsonResponse {
         $payload = [
             'success' => false,
             'message' => $message,

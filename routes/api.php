@@ -19,11 +19,11 @@ Route::apiResource('warehouses', WarehouseController::class);
 Route::apiResource('products', ProductController::class);
 Route::apiResource('suppliers', SupplierController::class);
 
-    Route::apiResource('inventory_transactions', InventoryTransactionController::class)->only(['index', 'show','store']);
-    Route::apiResource('inventory_transfer', InventoryTransferController::class)->only(['index', 'show','store']);
+Route::apiResource('inventory_transactions', InventoryTransactionController::class);
+Route::apiResource('inventory_transfer', InventoryTransferController::class);
 
 
-    Route::get('inventory/global-view', [InventoryReportController::class, 'globalView']);
-    Route::get('reports/low_stock', [InventoryReportController::class, 'lowStock']);
+Route::get('inventory/global-view', [InventoryReportController::class, 'globalView']);
+Route::get('reports/low_stock', [InventoryReportController::class, 'lowStock']);
 });
 

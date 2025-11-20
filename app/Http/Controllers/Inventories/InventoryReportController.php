@@ -25,7 +25,7 @@ class InventoryReportController extends Controller
 
             $result = $this->inventoryService->globalView($filters, $perPage);
 
-            return $this->success($result, 'Global inventory view fetched successfully.');
+            return $this->success($result, 'Global inventory view fetched successfully',200);
 
         } catch (\Throwable $e) {
             \Log::error('Error fetching global inventory view', [
@@ -40,7 +40,7 @@ class InventoryReportController extends Controller
     {
         try {
             $data = $this->inventoryService->getLowStockProduct();
-            return $this->success($data, 'Low inventory view fetched successfully.');
+            return $this->success($data, 'Low inventory view fetched successfully.',200);
         }catch (\Throwable $e){
             \Log::error('Error fetching low stock inventory view', [
                 'error' => $e->getMessage(),

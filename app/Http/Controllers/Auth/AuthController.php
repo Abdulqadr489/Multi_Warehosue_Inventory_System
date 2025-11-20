@@ -15,22 +15,14 @@ class AuthController extends Controller
 {
     use ApiResponse;
 
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $data = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:6', 'confirmed'],
-        ]);
+        $data = $request->validated();
 
         try {
-            $user = User::create([
-                'name'     => $data['name'],
-                'email'    => $data['email'],
-                'password' => Hash::make($data['password']),
-            ]);
+            $user = User::create($data);
 
-            return $this->success($user, 'User registered successfully.', 201);
+            return $this->success($user, 'User registered successfully', 201);
         } catch (\Throwable $e) {
             Log::error('Register error', ['error' => $e->getMessage()]);
             return $this->error('Failed to register user.', 500, $e->getMessage());

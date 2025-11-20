@@ -19,9 +19,8 @@ class WarehouseController extends Controller
     use ApiResponse;
 
     public function  __construct(protected WarehouseService $warehouseService)
-    {
+    {}
 
-    }
     public function index(BaseListRequest $request)
     {
         try {
@@ -33,16 +32,11 @@ class WarehouseController extends Controller
 
             return $this->success($warehouses, 'Warehouse fetched successfully.');
         } catch (\Exception $e) {
-            // your error() signature is (message, status, errors)
             return $this->error('Error', 500, $e->getMessage());
         }
     }
 
 
-    public function create()
-    {
-        //
-    }
 
     public function store(CreateWarehouseRequest $request)
     {
@@ -56,18 +50,6 @@ class WarehouseController extends Controller
 
         }
     }
-
-
-    public function show(Warehouse $warehouse)
-    {
-        //
-    }
-
-    public function edit(Warehouse $warehouse)
-    {
-        //
-    }
-
 
     public function update(UpdateWarehouseRequest $request, Warehouse $warehouse)
     {

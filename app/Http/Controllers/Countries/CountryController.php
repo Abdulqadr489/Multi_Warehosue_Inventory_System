@@ -31,13 +31,13 @@ class CountryController extends Controller
 
             $countries = $this->countryService->list($filters, $perPage);
 
-            return $this->success($countries, 'Countries fetched successfully.');
+            return $this->success($countries, 'Countries fetched successfully.',200);
         } catch (\Throwable $e) {
-            \Log::error('Error listing countries', [
+            \Log::error('Error listing Countries', [
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->error('Failed to fetch countries.', 500);
+            return $this->error('Failed to fetch Countries.', 500);
         }
     }
 
@@ -46,17 +46,11 @@ class CountryController extends Controller
         try {
             $validated = $request->validated();
             $country=$this->countryService->create($validated);
-            return $this->success($country,"Successfully Created","201");
+            return $this->success($country,"Successfully Country Created",201);
         }catch (\Exception $exception){
-            return $this->error($exception->getMessage());
+            return $this->error("An unexpected error occurred",500,$exception->getMessage());
         }
     }
-
-    public function show(UpdateCountryRequest $country)
-    {
-        //
-    }
-
 
     public function update(UpdateCountryRequest $request, Country $country)
     {
@@ -65,10 +59,10 @@ class CountryController extends Controller
             DB::beginTransaction();
             $country=$this->countryService->update($country,$validated);
             DB::commit();
-            return $this->success($country,"Successfully Updated","201");
+            return $this->success($country,"Successfully Country Updated",200);
         }catch (\Exception $exception){
             DB::rollBack();
-            return $this->error($exception->getMessage());
+            return $this->error("An unexpected error occurred",500,$exception->getMessage());
         }
     }
 
@@ -76,9 +70,9 @@ class CountryController extends Controller
     {
         try {
             $country=$this->countryService->delete($country);
-            return $this->success($country,"Successfully Deleted","201");
+            return $this->success($country,"Successfully Country Deleted",200);
         }catch (\Exception $exception){
-            return $this->error($exception->getMessage());
+            return $this->error("An unexpected error occurred",500,$exception->getMessage());
 
         }
     }

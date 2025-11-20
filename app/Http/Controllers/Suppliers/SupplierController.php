@@ -16,9 +16,7 @@ class SupplierController extends Controller
     use ApiResponse;
 
     public function __construct(protected SupplierService $supplierService)
-    {
-
-    }
+    {}
     public function index(BaseListRequest $request)
     {
         try {
@@ -34,10 +32,6 @@ class SupplierController extends Controller
 
     }
 
-    public function create()
-    {
-        //
-    }
 
     public function store(CreateSupplierRequest $request)
     {
@@ -50,25 +44,14 @@ class SupplierController extends Controller
         }
     }
 
-    public function show(Supplier $supplier)
-    {
-        //
-    }
-
-
-    public function edit(Supplier $supplier)
-    {
-        //
-    }
-
     public function update(UpdateSupplierRequest $request, Supplier $supplier)
     {
         try {
             $validated = $request->validated();
             $supplier = $this->supplierService->update($supplier, $validated);
-            return $this->success($supplier, 'Supplier updated successfully.');
+            return $this->success($supplier, 'Supplier updated successfully.',200);
         }catch (\Exception $e){
-            return $this->error($e->getMessage());
+            return $this->error("An unexpected error occurred",500,$e->getMessage());
         }
     }
 
@@ -76,9 +59,9 @@ class SupplierController extends Controller
     {
         try {
             $supplier = $this->supplierService->delete($supplier);
-            return $this->success("Deleted",'Supplier deleted successfully.');
+            return $this->success($supplier,'Supplier deleted successfully',200);
         }catch (\Exception $e){
-            return $this->error($e->getMessage());
+            return $this->error("An unexpected error occurred",500,$e->getMessage());
         }
     }
 }

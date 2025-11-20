@@ -32,7 +32,8 @@ class ProductService
 
     }
 
-    public function update(Product $product, array $data){
+    public function update(Product $product, array $data):Product
+    {
         return DB::transaction(function () use ($product, $data) {
            return $this->productRepository->update($product, $data);
         });

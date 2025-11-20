@@ -28,7 +28,8 @@ class SupplierService
 
 
 
-    public function update(Supplier $supplier, array $data){
+    public function update(Supplier $supplier, array $data) : Supplier
+    {
         return DB::transaction(function () use ($supplier, $data){
             return $this->supplierRepository->update($supplier, $data);
         });

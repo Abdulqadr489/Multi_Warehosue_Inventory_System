@@ -24,9 +24,9 @@ class ProductController extends Controller
             $filters = $request->validated();
 
             $products = $this->productService->list($filters, $perPage);
-            return $this->success($products, 'Product fetched successfully.');
+            return $this->success($products, 'Product fetched successfully.',200);
         }catch (\Exception $e){
-            return $this->error("Error", $e->getMessage());
+            return $this->error("An unexpected error occurred",500, $e->getMessage(),);
         }
     }
 
@@ -38,7 +38,7 @@ class ProductController extends Controller
             $product = $this->productService->create($validated);
             return $this->success($product, 'Product created successfully.',201);
         }catch (\Exception $e){
-            return $this->error("Error",500, $e->getMessage());
+            return $this->error("An unexpected error occurred",500, $e->getMessage());
         }
 
     }
@@ -47,12 +47,12 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         $product = $this->productService->find($product->id);
-        return $this->success($product, 'Product fetched successfully.');
+        return $this->success($product, 'Product fetched successfully.',200);
     }
 
 
 
-    public function update(UpdateProductRequest $request, Product $product)
+    public function update(UpdateProductRequest $request,Product $product)
     {
         try {
             $validated = $request->validated();
