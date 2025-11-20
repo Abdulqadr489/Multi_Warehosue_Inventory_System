@@ -66,6 +66,14 @@ The system manages products across multiple warehouses in different countries, w
 ## API Design
 
 All API routes are prefixed with `/api` and protected by **JWT** authentication, except `register` & `login`.
+## Postman Collection
+
+A Postman collection is included at:
+
+`docs/umg-inventory-api.postman_collection.json`
+
+Import it into Postman to quickly test all endpoints (auth, CRUD, inventory transactions, transfers, reports, etc.).
+
 
 ### Authentication
 
