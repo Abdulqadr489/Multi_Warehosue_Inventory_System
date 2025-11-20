@@ -19,6 +19,10 @@ class InventoryTransferController extends Controller
     )
     {}
 
+    /**
+     * Create new Transfer
+     *
+     * */
     public function store(CreateInventoryTransferRequest $request)
     {
         try {

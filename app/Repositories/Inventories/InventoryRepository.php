@@ -26,8 +26,6 @@ class InventoryRepository extends BaseRepository
         $this->sortable = [
             'id',
             'date',
-            'quantity',
-            'created_at',
         ];
 
         $this->defaultSortBy  = 'date';

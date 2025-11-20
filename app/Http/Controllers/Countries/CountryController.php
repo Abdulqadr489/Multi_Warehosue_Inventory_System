@@ -22,7 +22,15 @@ class CountryController extends Controller
     {
 
     }
-
+    /**
+     * List All countries
+     *
+     * You can:
+     * - filter using `search` (matches name or ISO code),
+     * - sort using `sort_by` (`name`, `code`),
+     * - control direction with `sort_dir` (`asc`, `desc`),
+     * - control page size with `per_page` (default 15).
+     */
     public function index(BaseListRequest $request):JsonResponse
     {
         try {
@@ -41,6 +49,10 @@ class CountryController extends Controller
         }
     }
 
+    /**
+     * Create New Country
+     *
+     * */
     public function store(CreateCountryRequest $request)
     {
         try {
@@ -52,6 +64,10 @@ class CountryController extends Controller
         }
     }
 
+    /**
+     * Update Country
+     *
+     * */
     public function update(UpdateCountryRequest $request, Country $country)
     {
         try {
@@ -66,6 +82,10 @@ class CountryController extends Controller
         }
     }
 
+    /**
+     * Delete Country
+     *
+     * */
     public function destroy(Country $country)
     {
         try {

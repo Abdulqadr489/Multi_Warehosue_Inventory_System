@@ -10,7 +10,7 @@ class CountryRepository extends BaseRepository
 
     protected array $searchable = ['name', 'code'];
 
-    protected array $sortable = ['id', 'name', 'code', 'created_at'];
+    protected array $sortable = ['name', 'code',];
 
     public function  __construct(Country $model)
     {

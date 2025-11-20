@@ -17,6 +17,16 @@ class SupplierController extends Controller
 
     public function __construct(protected SupplierService $supplierService)
     {}
+
+    /**
+     * List All Suppliers
+     *
+     * You can:
+     * - filter using `search` (`name` `address`),
+     * - sort using `sort_by` (`name`, `code`),
+     * - control direction with `sort_dir` (`asc`, `desc`),
+     * - control page size with `per_page` (default 15).
+     */
     public function index(BaseListRequest $request)
     {
         try {
@@ -32,7 +42,10 @@ class SupplierController extends Controller
 
     }
 
-
+    /**
+     * Create New Product
+     *
+     * */
     public function store(CreateSupplierRequest $request)
     {
         try {
@@ -44,6 +57,10 @@ class SupplierController extends Controller
         }
     }
 
+    /**
+     * Update Supplier
+     *
+     * */
     public function update(UpdateSupplierRequest $request, Supplier $supplier)
     {
         try {
@@ -55,6 +72,10 @@ class SupplierController extends Controller
         }
     }
 
+    /**
+     * Delete Supplier
+     *
+     * */
     public function destroy(Supplier $supplier)
     {
         try {

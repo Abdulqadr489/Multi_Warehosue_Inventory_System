@@ -17,6 +17,16 @@ class ProductController extends Controller
 
     public function __construct(protected ProductService $productService)
     {}
+
+    /**
+     * List All Products
+     *
+     * You can:
+     * - filter using `search` (`name` `sku` `status`),
+     * - sort using `sort_by` (`name` `sku` `status`),
+     * - control direction with `sort_dir` (`asc`, `desc`),
+     * - control page size with `per_page` (default 15).
+     */
     public function index(BaseListRequest $request)
     {
         try {
@@ -30,7 +40,10 @@ class ProductController extends Controller
         }
     }
 
-
+    /**
+     * Create New Product
+     *
+     * */
     public function store(CreateProductRequest $request)
     {
         try {
@@ -43,7 +56,10 @@ class ProductController extends Controller
 
     }
 
-
+    /**
+     * show Product detail
+     *
+     * */
     public function show(Product $product)
     {
         $product = $this->productService->find($product->id);
@@ -51,7 +67,10 @@ class ProductController extends Controller
     }
 
 
-
+    /**
+     * Update Product
+     *
+     * */
     public function update(UpdateProductRequest $request,Product $product)
     {
         try {
@@ -63,7 +82,10 @@ class ProductController extends Controller
         }
     }
 
-
+    /**
+     * Delete Product
+     *
+     * */
     public function destroy(Product $product)
     {
         try {

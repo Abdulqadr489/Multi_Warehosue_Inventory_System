@@ -16,7 +16,12 @@ class InventoryReportController extends Controller
 
     public function __construct(protected InventoryService $inventoryService)
     {}
-
+    /**
+     * Global View Per Product across all warehouses
+     *
+     * You can:
+     * - filter using `search` (matches `country_id` and `warehouse_id` with `country_name` and `warehouse_name`),
+     */
     public function globalView(InventoryGlobalViewRequest $request)
     {
         try {
@@ -36,6 +41,10 @@ class InventoryReportController extends Controller
         }
     }
 
+    /**
+     * Report of low Stock Products
+     *
+     * */
     public function lowStock()
     {
         try {

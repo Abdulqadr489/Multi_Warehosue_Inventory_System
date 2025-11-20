@@ -4,21 +4,20 @@ Backend API for a **Multi-Warehouse, Multi-Country Inventory Management System**
 
 The system manages products across multiple warehouses in different countries, with:
 
-- Full CRUD for core entities (countries, warehouses, products, suppliers)
+- CRUD for core entities depend Requirements (countries, warehouses, products, suppliers)
 - Inventory tracking per warehouse
 - Inventory transfers between warehouses (even across countries)
 - Global inventory view per product
-- Daily scheduled low-stock report (email + optional Slack)
+- Daily scheduled low-stock report (email + Slack)
 - JWT-secured API with auto-generated documentation
-
-This project is implemented as part of an interview assignment.
+- Using Soft Delete
 
 ---
 
 ## Tech Stack
 
-- **Framework:** Laravel (API only)
-- **Auth:** JWT Authentication (`auth:api` guard)
+- **Framework:** Laravel (API)
+- **Auth:** JWT Authentication 
 - **Database:** MySQL
 - **Docs:** [dedoc/scramble](https://github.com/dedoc/scramble) (OpenAPI 3, UI at `/docs/api`)
 - **Scheduler:** Laravel Scheduler & Console Commands
@@ -31,7 +30,7 @@ This project is implemented as part of an interview assignment.
 ### Core Modules
 
 - **Country**
-    - Fields: `id`, `name`, `code` (ISO)
+    - Fields: `id`, `name`, `code`
     - CRUD endpoints
 
 - **Warehouse**
@@ -244,7 +243,12 @@ Generate the JWT key:
 ### 3. Database Migrations
 
 - php artisan migrate
-### 4. Run the Application
+
+### 4. Database Seeding
+
+- php artisan db:seed
+
+### 5. Run the Application
 
 - php artisan serve
 

@@ -21,6 +21,15 @@ class WarehouseController extends Controller
     public function  __construct(protected WarehouseService $warehouseService)
     {}
 
+    /**
+     * List All Countries
+     *
+     * You can:
+     * - filter using `search` (`name` `location` `country_id`,'country),
+     * - sort using `sort_by` (`name` `location`,`country_name`),
+     * - control direction with `sort_dir` (`asc`, `desc`),
+     * - control page size with `per_page` (default 15).
+     */
     public function index(BaseListRequest $request)
     {
         try {
@@ -38,6 +47,10 @@ class WarehouseController extends Controller
 
 
 
+    /**
+     * Create New Warehouse
+     *
+     * */
     public function store(CreateWarehouseRequest $request)
     {
         try {
@@ -51,6 +64,10 @@ class WarehouseController extends Controller
         }
     }
 
+    /**
+     * Update Warehosue
+     *
+     * */
     public function update(UpdateWarehouseRequest $request, Warehouse $warehouse)
     {
         try {
@@ -63,6 +80,10 @@ class WarehouseController extends Controller
         }
     }
 
+    /**
+     * Delete Product
+     *
+     * */
     public function destroy(Warehouse $warehouse)
     {
         try {

@@ -20,6 +20,15 @@ class InventoryTransactionController extends Controller
         protected InventoryService $inventoryService,
     ){}
 
+    /**
+     * List All Inventory Transactions
+     *
+     * You can:
+     * - filter using `search` (`transaction_type` `quantity` `date` , `product name`,`warehouse name`,`supplier name`),
+     * - sort using `sort_by` (`date`, `product_name`,`warehouse_name`),
+     * - control direction with `sort_dir` (`asc`, `desc`),
+     * - control page size with `per_page` (default 15).
+     */
     public function index(BaseListRequest $request)
     {
         try {
@@ -43,6 +52,10 @@ class InventoryTransactionController extends Controller
         }
     }
 
+    /**
+     * show transaction detail
+     *
+     * */
     public function show(InventoryTransaction $inventoryTransaction)
     {
         return $this->success(
@@ -51,6 +64,10 @@ class InventoryTransactionController extends Controller
         );
     }
 
+    /**
+     * create new transaction
+     *
+     * */
     public function store(CreateInventoryTransactionRequest $request)
     {
         try {
