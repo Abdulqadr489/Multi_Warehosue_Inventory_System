@@ -58,7 +58,7 @@ class CheckLowStockInventory extends Command
                     'text' => "Low stock report: {$count} products at or below minimum.\n\n{$lines}",
                 ]);
 
-                $this->info('Slack notification sent (with SSL verify=false for local dev)');
+                $this->info('Slack notification sent (with SSL verify=false just local dev test)');
             } catch (\Throwable $e) {
                 $this->warn('Slack notification failed (local SSL issue): ' . $e->getMessage());
             }

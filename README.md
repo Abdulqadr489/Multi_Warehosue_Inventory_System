@@ -370,9 +370,10 @@ The following bonus tasks from the assignment are implemented:
       ```env
       LOW_STOCK_SLACK_WEBHOOK=https://hooks.slack.com/services/XXX/YYY/ZZZ
       ```
-    - On some local environments, you may see `cURL error 60` if PHP/cURL SSL CA certificates are not configured.  
+    To create a Slack webhook, go to Slack → Apps → search for Incoming Webhooks → Add to Slack, choose a channel, then copy the generated Webhook URL and put it in your .env as SLACK_WEBHOOK_URL.  
+      - On some local environments, you may see `cURL error 60` if PHP/cURL SSL CA certificates are not configured.  
       In that case, the command logs the Slack error but still completes successfully and sends the email.  
-      This does **not** affect the core business logic.
+            This does **not** affect the core business logic, and in this project me make SSL verify=false just for test and showing that logic work
 
 ---
 
