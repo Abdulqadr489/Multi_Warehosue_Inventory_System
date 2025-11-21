@@ -31,6 +31,8 @@ Copy the example `.env`:
 
 ```bash
 cp .env.example .env
+
+
 ```
 
 Generate app key:
@@ -63,6 +65,38 @@ MAIL_FROM_NAME="Inventory API"
 LOW_STOCK_REPORT_EMAIL=you@example.com
 
 LOW_STOCK_SLACK_WEBHOOK=
+```
+###  Testing environment
+
+Copy the example `.env.testing`:
+
+```bash
+cp .env.testing.example .env.testing
+
+
+```
+Generate app key:
+
+```bash
+php artisan key:generate --env=testing
+```
+
+Generate JWT secret:
+
+```bash
+php artisan jwt:secret --env=testing
+```
+
+Edit `.env.testing` to set your DB and mail configuration:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=umg_inventory_test
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+
 ```
 
 ###  Database Migrations (and Seeders if any)
