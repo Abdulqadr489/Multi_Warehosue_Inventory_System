@@ -2,7 +2,6 @@
 
 namespace App\Repositories\Inventories;
 
-use App\Http\Requests\BaseList\BaseListRequest;
 use App\Models\Inventories\InventoryTransaction;
 use App\Repositories\Base\BaseRepository;
 

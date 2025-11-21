@@ -17,8 +17,6 @@ class UpdateCountryRequest extends FormRequest
 
     public function rules(): array
     {
-        $country = (new CreateCountryRequest())->rules();
-
-        return $country;
+        return (new CreateCountryRequest())->rules();
     }
 }

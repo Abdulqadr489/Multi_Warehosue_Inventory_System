@@ -2,6 +2,7 @@
 
 namespace App\Models\Inventories;
 
+use App\Enums\TransactionType;
 use App\Models\Product\Product;
 use App\Models\Suppliers\Supplier;
 use App\Models\User;
@@ -25,6 +26,7 @@ class InventoryTransaction extends Model
     ];
 
     protected $casts = [
+        'transaction_type' => TransactionType::class,
         'date' => 'datetime',
     ];
 

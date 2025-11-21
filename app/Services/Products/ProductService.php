@@ -41,7 +41,7 @@ class ProductService
 
     public function delete(Product $product){
         return DB::transaction(function () use ($product){
-            return $this->productRepository->delete($product);
+            $this->productRepository->delete($product);
         });
     }
 }

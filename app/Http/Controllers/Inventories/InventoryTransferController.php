@@ -12,8 +12,6 @@ use Illuminate\Http\Request;
 
 class InventoryTransferController extends Controller
 {
-    use ApiResponse;
-
     public function __construct(
         protected InventoryService $inventoryService,
     )

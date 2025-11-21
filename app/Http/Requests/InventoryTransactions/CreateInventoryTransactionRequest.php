@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\InventoryTransactions;
 
+use App\Enums\TransactionType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -45,7 +46,7 @@ class CreateInventoryTransactionRequest extends FormRequest
             ],
             'transaction_type' => [
                 'required',
-                Rule::in(['IN', 'OUT']),
+                Rule::in(TransactionType::values()),
             ],
             'date' => [
                 'date',

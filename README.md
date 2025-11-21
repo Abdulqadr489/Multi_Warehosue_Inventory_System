@@ -4,260 +4,434 @@ Backend API for a **Multi-Warehouse, Multi-Country Inventory Management System**
 
 The system manages products across multiple warehouses in different countries, with:
 
-- CRUD for core entities depend Requirements (countries, warehouses, products, suppliers)
+- CRUD for core entities (countries, warehouses, products, suppliers)
 - Inventory tracking per warehouse
 - Inventory transfers between warehouses (even across countries)
 - Global inventory view per product
-- Daily scheduled low-stock report (email + Slack)
-- JWT-secured API with auto-generated documentation
-- Using Soft Delete
+- Daily scheduled low-stock report (email + optional Slack)
+- JWT-secured REST API
+- Soft deletes where appropriate (e.g. countries, warehouses, products, suppliers)
 
 ---
 
-## Tech Stack
+##  Getting Started (Step by Step)
 
-- **Framework:** Laravel (API)
-- **Auth:** JWT Authentication 
+###  Clone & Install Dependencies
+
+```bash
+git clone https://github.com/Abdulqadr489/Multi_Warehosue_Inventory_System.git
+cd Multi_Warehosue_Inventory_System
+
+composer install
+```
+
+###  Environment Configuration
+
+Copy the example `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Generate app key:
+
+```bash
+php artisan key:generate
+```
+
+Generate JWT secret:
+
+```bash
+php artisan jwt:secret
+```
+
+Edit `.env` to set your DB and mail configuration:
+
+```env
+DB_DATABASE=multi_warehosue_inventory_system
+DB_USERNAME=your_db_user
+DB_PASSWORD=your_db_password
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.mailtrap.io      # or smtp.gmail.com
+MAIL_PORT=2525                  # or 587
+MAIL_USERNAME=...
+MAIL_PASSWORD=...
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="Inventory API"
+
+LOW_STOCK_REPORT_EMAIL=you@example.com
+
+LOW_STOCK_SLACK_WEBHOOK=
+```
+
+###  Database Migrations (and Seeders if any)
+
+```bash
+php artisan migrate
+
+php artisan db:seed   
+```
+
+### Run the Application
+
+```bash
+php artisan serve
+```
+
+Now you can:
+
+- Explore the API docs at: `http://127.0.0.1:8000/docs/api`
+- Import the Postman collection from `docs/Inventory System Management.postman_collection.json`
+- Use `php artisan inventory:check-low-stock` to trigger the low stock report manually.
+
+---
+
+## 1. Tech Stack
+
+- **Framework:** Laravel 12 (API-only style)
+- **Auth:** JWT Authentication (tymon/jwt-auth)
 - **Database:** MySQL
-- **Docs:** [dedoc/scramble](https://github.com/dedoc/scramble) (OpenAPI 3, UI at `/docs/api`)
-- **Scheduler:** Laravel Scheduler & Console Commands
+- **Docs:** [dedoc/scramble](https://github.com/dedoc/scramble)
+    - Generates OpenAPI 3.0 spec and interactive UI at: `/docs/api`
+- **Scheduling:** Laravel Scheduler
+- **Console Commands:** `php artisan inventory:check-low-stock`
+- **Caching:** Laravel Cache (products)
+- **Notifications:** Mail + Slack (via webhook)
 - **Testing:** PHPUnit (`php artisan test`)
 
 ---
 
-## Requirements & Features Overview
+## 2. Core Domain & Requirements
 
-### Core Modules
+### 2.1 Modules
 
 - **Country**
-    - Fields: `id`, `name`, `code`
+    - Fields: `id`, `name`, `code` (ISO-like)
+    - Relationships: `hasMany(Warehouse)`
     - CRUD endpoints
 
 - **Warehouse**
     - Fields: `id`, `name`, `location`, `country_id`
-    - Belongs to `Country`
+    - Relationships: `belongsTo(Country)`, `hasMany(Inventory)`, `hasMany(InventoryTransaction)`
+    - Must be linked to an existing country
     - CRUD endpoints
 
 - **Product**
     - Fields: `id`, `name`, `sku`, `status`, `description`, `price`
+    - Relationships: `hasMany(Inventory)`, `hasMany(InventoryTransaction)`
+    - `sku` is unique
     - CRUD endpoints
 
 - **Supplier**
     - Fields: `id`, `name`, `contact_info`, `address`
+    - Relationships: `hasMany(InventoryTransaction)`
     - CRUD endpoints
 
 - **Inventory**
     - Fields: `id`, `product_id`, `warehouse_id`, `quantity`, `minimum_quantity`
     - Represents stock of a product in a specific warehouse
+    - Relationships: `belongsTo(Product)`, `belongsTo(Warehouse)`
 
 - **InventoryTransaction**
     - Fields: `id`, `product_id`, `warehouse_id`, `supplier_id`, `quantity`,
       `transaction_type` (`IN`/`OUT`), `date`, `created_by`
+    - Relationships: `belongsTo(Product)`, `belongsTo(Warehouse)`, `belongsTo(Supplier)`, `belongsTo(User, 'created_by')`
     - Records stock movements (purchases, sales, adjustments)
     - Prevents `OUT` when stock is insufficient in that warehouse
 
-- **InventoryTransfer**
+- **Inventory Transfer**
+    - Implemented via service-level operation
     - Transfers stock between warehouses (even across different countries)
     - Validates source warehouse stock before completing transfer
-    - Adjusts inventory for both source and destination warehouses
+    - Adjusts inventory for both source and destination warehouses in a single DB transaction
 
 ---
 
-## API Design
+## 3. Authentication
 
-All API routes are prefixed with `/api` and protected by **JWT** authentication, except `register` & `login`.
-## Postman Collection
+JWT is used to protect the API.
 
-A Postman collection is included at:
+### 3.1 Endpoints
 
-`docs/umg-inventory-api.postman_collection.json`
-
-Import it into Postman to quickly test all endpoints (auth, CRUD, inventory transactions, transfers, reports, etc.).
-
-
-### Authentication
-
-- `POST /api/register` – Create a new user
+- `POST /api/register` – Register a new user (for testing)
 - `POST /api/login` – Obtain a JWT access token
 
-**Usage:**
+### 3.2 Usage
 
-1. Call `POST /api/login` with email/password.
-2. Copy `access_token` from the response.
-3. For all subsequent requests, send:
+1. Call:
+
+   ```http
+   POST /api/login
+   Content-Type: application/json
+
+   {
+     "email": "user@example.com",
+     "password": "secret"
+   }
+   ```
+
+2. Copy the `access_token` from the response.
+
+3. For all protected endpoints, send:
 
    ```http
    Authorization: Bearer <access_token>
    Accept: application/json
+   ```
 
-## Main Endpoints
+Most `/api/*` routes (countries, warehouses, products, suppliers, inventory, reports) are wrapped in an `auth:api` middleware group so only authenticated users can access them.
 
-> Exact request/response schemas are visible and testable in `/docs/api`.
+---
 
-### Countries
+## 4. Main API Endpoints (Overview)
 
-- `GET /api/countries` – List countries (supports pagination, search/sort via `BaseListRequest`)
+> Exact request/response schemas are visible and testable in `/docs/api` (Scramble UI) and in the provided Postman collection.
+
+### 4.1 Countries
+
+- `GET /api/countries` – List countries (supports pagination, search, sort)
 - `POST /api/countries` – Create country
 - `PUT /api/countries/{id}` – Update country
-- `DELETE /api/countries/{id}` – Delete country
+- `DELETE /api/countries/{id}` – Soft delete country
 
-### Warehouses
+### 4.2 Warehouses
 
 - `GET /api/warehouses`
 - `POST /api/warehouses`
 - `PUT /api/warehouses/{id}`
 - `DELETE /api/warehouses/{id}`
 
-### Products
+Listing supports:
+
+- Search by warehouse name, location
+- Search by related country name/code
+- Sorting by warehouse fields, and by country name (via join)
+
+### 4.3 Products
 
 - `GET /api/products`
 - `POST /api/products`
 - `PUT /api/products/{id}`
 - `DELETE /api/products/{id}`
 
-### Suppliers
+Notes:
+
+- `sku` is unique
+- Frequently accessed `Product` reads are cached in `ProductRepository`
+- Cache is invalidated when a product is updated or deleted
+
+### 4.4 Suppliers
 
 - `GET /api/suppliers`
 - `POST /api/suppliers`
 - `PUT /api/suppliers/{id}`
 - `DELETE /api/suppliers/{id}`
 
-### Inventory Transactions
+### 4.5 Inventory Transactions (IN / OUT)
 
-- `POST /api/inventory_transactions`  
+- `GET /api/inventory_transactions` – List transactions (with filters)
+- `POST /api/inventory_transactions` – Record a transaction
 
-Records an `IN` or `OUT` transaction:
+Behavior:
 
-- Validates `product_id`, `warehouse_id`, `supplier_id`
-- Validates `transaction_type` ∈ `{IN, OUT}`
-- For **IN**:
-    - Increases inventory for that product/warehouse, or creates it if missing
-- For **OUT**:
-    - Checks available quantity in that warehouse
-    - Rejects with a clear error if stock is insufficient (e.g. “Insufficient stock in this warehouse.”)
-    - Otherwise, decreases quantity
+- Validates `product_id`, `warehouse_id`, `supplier_id` (if present), `quantity`, and `transaction_type` (`IN` or `OUT`).
+- **IN**:
+    - Finds or creates `Inventory` for `(product_id, warehouse_id)`
+    - Increases `quantity`
+    - Updates `minimum_quantity` (if provided)
+- **OUT**:
+    - Ensures `Inventory` exists and `quantity >= requested`
+    - If not, throws a business exception and returns error JSON (e.g. `"Insufficient stock in this warehouse."`)
+    - Otherwise reduces `quantity`
+- Each transaction creates an `InventoryTransaction` with `created_by = current user`.
+- After stock adjustment, if `quantity <= minimum_quantity`, a `LowStockReached` event is dispatched.
 
-### Inventory Transfers
+### 4.6 Inventory Transfers (Movement)
 
 - `POST /api/inventory_transfer`
 
-Transfers a quantity of a product from one warehouse to another:
+Request example:
 
-- Validates source warehouse stock
-- Decreases inventory in the source warehouse
-- Increases (or creates) inventory in the destination warehouse
+```json
+{
+  "product_id": 10,
+  "from_warehouse_id": 4,
+  "to_warehouse_id": 5,
+  "quantity": 2,
+  "supplier_id": 3,
+  "date": "2025-11-17T20:00:00Z",
+  "minimum_quantity": 6
+}
+```
 
-### Global Inventory View
+Logic (inside `InventoryService`):
+
+- Runs inside a single DB transaction.
+- Performs an `OUT` transaction for the source warehouse.
+- Performs an `IN` transaction for the target warehouse.
+- If the source does not have enough stock, the whole transfer fails and rolls back.
+- Works across warehouses in different countries (countries are enforced at DB/model level).
+
+### 4.7 Global Inventory View
 
 - `GET /api/inventory/global-view`
 
-Returns aggregated stock per product across all warehouses:
+Returns **total stock per product across all warehouses**, with optional filters:
 
-- Aggregated total quantity per product
-- Optional filters:
-    - `country_id` or `country_name`
-    - `warehouse_id` or `warehouse_name`
+Query parameters:
 
-### Low Stock Report
+- `country_id` or `country_name` – filter by country
+- `warehouse_id` or `warehouse_name` – filter by warehouse
+- `search` – search by product name or SKU
+- Pagination: `per_page` (from `BaseListRequest`)
+
+Example response item:
+
+```json
+{
+  "product_id": 10,
+  "product_name": "tiger",
+  "product_sku": "sku_0012",
+  "total_quantity": 37
+}
+```
+
+### 4.8 Low Stock Report (API)
 
 - `GET /api/reports/low_stock`  
   (matches the requirement’s `GET /api/reports/low-stock`)
 
-Returns products where `quantity <= minimum_quantity` per warehouse, including:
+Returns all inventory rows where `quantity <= minimum_quantity`, with:
 
-- Product Name
-- SKU
-- Current Quantity
-- Minimum Required Quantity
-- Warehouse Location
-- Country
-- Supplier Contact Information (if linked)
+- Product name & SKU
+- Current quantity
+- Minimum required quantity
+- Warehouse name & location
+- Country name & code
+- Supplier name & contact info (based on latest IN transaction with supplier)
 
-## Project Structure
+---
 
-Key directories and patterns:
+## 5. Low-Stock Scheduler & Console Command
 
-### `app/Models/`
+A dedicated console command is provided:
 
-- `Country`, `Warehouse`, `Product`, `Supplier`, `Inventory`,
-  `InventoryTransaction`, `InventoryTransfer`, `User`, etc.
+```bash
+php artisan inventory:check-low-stock
+```
 
-### `app/Http/Controllers/`
+This command:
 
-- Resource controllers (e.g. `Countries\CountryController`, `Warehouses\WarehouseController`, etc.)
-- Controllers are thin: they handle HTTP, authorize, validate, and delegate to services.
+1. Queries all `Inventory` records where `quantity <= minimum_quantity`.
+2. Maps them into a report structure in `InventoryService::getLowStockProduct()`.
+3. Sends an HTML email to the address from `.env`:
 
-### `app/Http/Requests/`
+   ```env
+   LOW_STOCK_REPORT_EMAIL=you@example.com
+   ```
 
-FormRequests for validation:
+4. (Bonus) Attempts to send a Slack notification if `LOW_STOCK_SLACK_WEBHOOK` is configured.
 
-- `Countries/CreateCountryRequest`, `Countries/UpdateCountryRequest`
-- Similar requests for Warehouse, Product, Supplier
-- `BaseList\BaseListRequest` for list filters & pagination
-- `Inventories/InventoryGlobalViewRequest` for global view filters
+The command is scheduled daily at **00:00** in `bootstrap/app.php`:
 
-### `app/Repositories/`
+```php
+use Illuminate\Console\Scheduling\Schedule;
 
-- Repository classes that encapsulate Eloquent queries
-- Used by services so controllers don’t touch DB directly
+->withSchedule(function (Schedule $schedule) {
+    $schedule->command('inventory:check-low-stock')->dailyAt('00:00');
+})
+```
 
-### `app/Services/`
+To enable scheduler in production, add a cron entry:
 
-Service layer for business logic:
+```bash
+* * * * * php /path/to/artisan schedule:run >> /dev/null 2>&1
+```
 
-- `CountryService`, `WarehouseService`, `ProductService`, `SupplierService`
-- `InventoryService`, `InventoryTransferService`, `InventoryReportService`, etc.
+---
 
-### `app/Console/Commands/`
+## 6. Bonus Tasks Implemented
 
-- `InventoryCheckLowStock` – console command to generate/send low stock report
+The following bonus tasks from the assignment are implemented:
 
-### `app/bootstrap/app.php`
+1. **Caching for frequently accessed products**
+    - Implemented in `ProductRepository::find()`
+    - Uses `Cache::remember("product:{id}", ttl, ...)`
+    - Cache is cleared on update and delete.
 
-- Schedules the low-stock job daily at `00:00`
+2. **Event Listeners / Notifications for low stock**
+    - When inventory quantity becomes `<= minimum_quantity`, a `LowStockReached` event is dispatched from `InventoryService`.
+    - This allows attaching listeners for additional notifications (e.g. real-time alerts).
 
-### `app/Repositories/Traits/ApiResponse.php`
+3. **Slack Notification for daily low stock report**
+    - The `inventory:check-low-stock` command can send a Slack message summarizing low-stock products using `LowStockSlackNotification`.
+    - Uses a configurable webhook:
+      ```env
+      LOW_STOCK_SLACK_WEBHOOK=https://hooks.slack.com/services/XXX/YYY/ZZZ
+      ```
+    - On some local environments, you may see `cURL error 60` if PHP/cURL SSL CA certificates are not configured.  
+      In that case, the command logs the Slack error but still completes successfully and sends the email.  
+      This does **not** affect the core business logic.
 
-- Reusable trait providing uniform JSON `success()` and `error()` responses
+---
 
-### `tests/`
+## 7. API Documentation (Scramble)
 
-- Unit & feature tests for core flows (countries CRUD, inventory transactions,inventory transfer,low stock report)
+This project uses **dedoc/scramble** for automatic OpenAPI generation.
 
-## Getting Started
+- UI: `GET /docs/api`
+- Generates OpenAPI 3.0 spec from:
+    - routes (`routes/api.php`)
+    - form requests (validation rules)
+    - controller signatures & attributes
 
-### 1. Clone & Install Dependencies
+You can explore and test all endpoints from the browser, similar to Swagger UI.
 
-git clone https://github.com/<your-username>/<your-repo>.git
+---
 
-cd <your-repo>
+## 8. Postman Collection
 
-composer install
-### 2. Environment Configuration
+A Postman collection is included at:
 
-Copy the example env file:
+```text
+docs/Inventory System Management.postman_collection.json
+```
 
-- cp .env.example .env
+Import it into Postman to quickly test all endpoints:
 
+- Authentication (login)
+- CRUD for countries, warehouses, products, suppliers
+- Inventory transactions (IN/OUT)
+- Inventory transfer
+- Global inventory view
+- Low stock report endpoint
 
-Generate the app key:
+---
 
-- php artisan key:generate
+## 9. Testing
 
-Generate the JWT key:
+Feature tests cover the main business flows, including:
 
-- php artisan jwt:secret
+- Countries CRUD
+- Warehouse CRUD
+- Supplier CRUD
+- Product CRUD
+- Inventory IN / OUT validation:
+    - IN increases quantity
+    - OUT decreases quantity
+    - OUT fails when stock would go negative
+- Inventory transfer:
+    - Reduces stock in source warehouse
+    - Increases stock in destination warehouse
+- Low stock report:
+    - Inventories at/below minimum appear in `GET /api/reports/low_stock`
 
-### 3. Database Migrations
+Run the test suite with:
 
-- php artisan migrate
+```bash
+php artisan test
+```
 
-### 4. Database Seeding
-
-- php artisan db:seed
-
-### 5. Run the Application
-
-- php artisan serve
 
 

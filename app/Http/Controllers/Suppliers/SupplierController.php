@@ -13,8 +13,6 @@ use Illuminate\Http\Request;
 
 class SupplierController extends Controller
 {
-    use ApiResponse;
-
     public function __construct(protected SupplierService $supplierService)
     {}
 
@@ -34,7 +32,7 @@ class SupplierController extends Controller
             $filters = $request->filters();
             $suppliers = $this->supplierService->list($filters, $perPage);
 
-            return $this->success($suppliers, 'Suppliers fetched successfully.');
+            return $this->success($suppliers, 'Suppliers fetched successfully.',200);
         }catch (\Exception $e){
             return $this->error($e->getMessage());
         }
@@ -51,7 +49,7 @@ class SupplierController extends Controller
         try {
             $validated = $request->validated();
             $supplier = $this->supplierService->create($validated);
-            return $this->success($supplier, 'Supplier created successfully.');
+            return $this->success($supplier, 'Supplier created successfully.',201);
         }catch (\Exception $e){
             return $this->error($e->getMessage());
         }
@@ -66,7 +64,7 @@ class SupplierController extends Controller
         try {
             $validated = $request->validated();
             $supplier = $this->supplierService->update($supplier, $validated);
-            return $this->success($supplier, 'Supplier updated successfully.',200);
+            return $this->success($supplier, 'Supplier updated successfully.',202);
         }catch (\Exception $e){
             return $this->error("An unexpected error occurred",500,$e->getMessage());
         }
@@ -80,7 +78,7 @@ class SupplierController extends Controller
     {
         try {
             $supplier = $this->supplierService->delete($supplier);
-            return $this->success($supplier,'Supplier deleted successfully',200);
+            return $this->success($supplier,'Supplier deleted successfully',204);
         }catch (\Exception $e){
             return $this->error("An unexpected error occurred",500,$e->getMessage());
         }

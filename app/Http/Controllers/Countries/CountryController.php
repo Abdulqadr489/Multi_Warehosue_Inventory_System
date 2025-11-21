@@ -16,8 +16,6 @@ use Illuminate\Support\Facades\DB;
 
 class CountryController extends Controller
 {
-
-    use ApiResponse;
     public function __construct(protected CountryService $countryService)
     {
 
@@ -75,7 +73,7 @@ class CountryController extends Controller
             DB::beginTransaction();
             $country=$this->countryService->update($country,$validated);
             DB::commit();
-            return $this->success($country,"Successfully Country Updated",200);
+            return $this->success($country,"Successfully Country Updated",202);
         }catch (\Exception $exception){
             DB::rollBack();
             return $this->error("An unexpected error occurred",500,$exception->getMessage());
@@ -89,8 +87,8 @@ class CountryController extends Controller
     public function destroy(Country $country)
     {
         try {
-            $country=$this->countryService->delete($country);
-            return $this->success($country,"Successfully Country Deleted",200);
+            $this->countryService->delete($country);
+            return $this->success([],"Successfully Country Deleted",204);
         }catch (\Exception $exception){
             return $this->error("An unexpected error occurred",500,$exception->getMessage());
 

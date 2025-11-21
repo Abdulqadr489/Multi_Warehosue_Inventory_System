@@ -7,8 +7,10 @@ use App\Models\Product\Product;
 use App\Notifications\LowStockSlackNotification;
 use App\Services\Inventories\InventoryService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
+use Symfony\Component\Console\Command\Command as CommandAlias;
 
 class CheckLowStockInventory extends Command
 {
@@ -16,46 +18,55 @@ class CheckLowStockInventory extends Command
 
     public $description = 'Scan inventories and send low stock report email with Slack notification';
 
-
     public function handle(InventoryService $inventoryService)
     {
         $products = $inventoryService->getLowStockProduct();
 
-        if($products->isEmpty()){
+        if ($products->isEmpty()) {
             $this->info('There is no low inventory report');
-            return Command::SUCCESS;
+            return CommandAlias::SUCCESS;
         }
 
-        $to = env('LOW_STOCK_REPORT_EMAIL');
+        $to = config('low_stock.report_email');
 
-        if(!$to)
-        {
-            $this->warn('Low inventory report email not sent');
-            return Command::SUCCESS;
-        }
-        else{
-            Mail::to($to)->send(new LowStockReportMail($products));
-            $this->info('Low inventory report email sent to '.$to);
+        if (!$to) {
+            $this->warn('Low inventory report email not sent (LOW_STOCK_REPORT_EMAIL missing)');
+            return CommandAlias::SUCCESS;
         }
 
-        $slackWebhook = env('LOW_STOCK_SLACK_WEBHOOK');
+        Mail::to($to)->send(new LowStockReportMail($products));
+        $this->info('Low inventory report email sent to ' . $to);
 
-        if ($slackWebhook) {
+        $webhook = config('low_stock.slack_webhook');
+
+        if ($webhook) {
             try {
-                Notification::route('slack', $slackWebhook)
-                    ->notify(new LowStockSlackNotification($products));
+                $count = $products->count();
 
-                $this->info('Low inventory Slack notification sent.');
-            } catch (\Throwable $e) {
-                $this->warn('Slack notification failed: ' . $e->getMessage());
-                \Log::error('Slack low stock notification error', [
-                    'error' => $e->getMessage(),
+                $lines = $products->take(5)->map(function ($item) {
+                    return sprintf(
+                        '- %s (%s): qty=%s, warehouse=%s',
+                        $item['product_name'] ?? 'N/A',
+                        $item['sku'] ?? 'N/A',
+                        $item['current_quantity'] ?? '0',
+                        $item['warehouse_name'] ?? 'N/A'
+                    );
+                })->implode("\n");
+
+                Http::withOptions(['verify' => false])
+                ->post($webhook, [
+                    'text' => "Low stock report: {$count} products at or below minimum.\n\n{$lines}",
                 ]);
+
+                $this->info('Slack notification sent (with SSL verify=false for local dev)');
+            } catch (\Throwable $e) {
+                $this->warn('Slack notification failed (local SSL issue): ' . $e->getMessage());
             }
         } else {
-            $this->warn('Slack notification not sent (LOW_STOCK_SLACK_WEBHOOK not configured)');
+            $this->warn('LOW_STOCK_SLACK_WEBHOOK not configured, skipping Slack notification.');
         }
 
-        return Command::SUCCESS;
-        }
+        return CommandAlias::SUCCESS;
+    }
+
 }

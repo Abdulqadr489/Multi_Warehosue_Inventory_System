@@ -29,9 +29,7 @@ abstract class BaseRepository
 
     public function paginateWithFilters(array $filters = [], int $perPage = 10)
     {
-        $query = $this->buildQueryFilters($filters);
-
-        return $query->paginate($perPage);
+        return $this->buildQueryFilters($filters)->paginate($perPage);
     }
 
     public function find(int $id): ?Model
@@ -46,8 +44,7 @@ abstract class BaseRepository
 
     public function update(Model $model, array $data): Model
     {
-        $model->fill($data);
-        $model->save();
+        $model->update($data);
 
         return $model;
     }

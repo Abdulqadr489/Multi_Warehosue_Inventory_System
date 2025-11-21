@@ -17,7 +17,7 @@ class SendLowStockNotification
     {
         $inventory = $event->inventory;
 
-        $to = env('LOW_STOCK_REPORT_EMAIL');
+        $to = config('low_stock.report_email');
 
         if ($to) {
             Mail::to($to)->send(new LowStockAlertMail($inventory));

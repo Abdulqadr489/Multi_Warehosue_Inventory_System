@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Log;
 
 class InventoryReportController extends Controller
 {
-    use ApiResponse;
 
     public function __construct(protected InventoryService $inventoryService)
     {}

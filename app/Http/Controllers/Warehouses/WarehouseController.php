@@ -16,8 +16,6 @@ use Illuminate\Support\Facades\DB;
 
 class WarehouseController extends Controller
 {
-    use ApiResponse;
-
     public function  __construct(protected WarehouseService $warehouseService)
     {}
 
@@ -39,7 +37,7 @@ class WarehouseController extends Controller
 
             $warehouses = $this->warehouseService->list($filters, $perPage);
 
-            return $this->success($warehouses, 'Warehouse fetched successfully.');
+            return $this->success($warehouses, 'Warehouse fetched successfully.',200);
         } catch (\Exception $e) {
             return $this->error('Error', 500, $e->getMessage());
         }
@@ -56,7 +54,7 @@ class WarehouseController extends Controller
         try {
             $validated = $request->validated();
             $warehouse = $this->warehouseService->create($validated);
-            return $this->success($warehouse, 'Warehouse created successfully.');
+            return $this->success($warehouse, 'Warehouse created successfully.',201);
         }catch (\Exception $e){
             DB::rollBack();
             return $this->error("Error", $e->getMessage());
@@ -65,7 +63,7 @@ class WarehouseController extends Controller
     }
 
     /**
-     * Update Warehosue
+     * Update Warehouse
      *
      * */
     public function update(UpdateWarehouseRequest $request, Warehouse $warehouse)
@@ -73,7 +71,7 @@ class WarehouseController extends Controller
         try {
             $validated = $request->validated();
             $warehouse = $this->warehouseService->update($warehouse, $validated);
-            return $this->success($warehouse, 'Warehouse fetched successfully.');
+            return $this->success($warehouse, 'Warehouse fetched successfully.',202);
 
         }catch (\Exception $e){
             return $this->error("Error", $e->getMessage());
@@ -88,7 +86,7 @@ class WarehouseController extends Controller
     {
         try {
             $warehouse = $this->warehouseService->delete($warehouse);
-            return $this->success($warehouse, 'Warehouse fetched successfully.');
+            return $this->success($warehouse, 'Warehouse fetched successfully.',204);
         }catch (\Exception $e){
             return $this->error("Error", $e->getMessage());
         }

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Products;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CreateProductRequest extends FormRequest
 {
@@ -17,10 +18,10 @@ class CreateProductRequest extends FormRequest
     {
         return [
             'name'=>['required','string','max:100'],
-            'sku'=>['required','string','max:100','unique:products,sku'],
+            'sku'=>['required','string','max:100', Rule::unique('products','sku')->whereNull('deleted_at')],
             'status'=>['in:active,inactive','required'],
             'description'=>['nullable','string','max:100'],
-            'price'=>['required','string','max:100'],
+            'price'=>['required','numeric'],
 
 
         ];

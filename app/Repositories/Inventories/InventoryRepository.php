@@ -9,7 +9,7 @@ class InventoryRepository extends BaseRepository
 {
     public function __construct(Inventory $inventory)
     {
-        Parent::__construct($inventory);
+        parent::__construct($inventory);
 
         $this->searchable = [
             'transaction_type',

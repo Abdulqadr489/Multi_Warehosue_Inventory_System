@@ -33,10 +33,10 @@ class WarehouseService
         });
     }
 
-    public function delete(Warehouse $warehouse)
+    public function delete(Warehouse $warehouse) : Warehouse
     {
         return DB::transaction(function () use ($warehouse) {
-            return $this->warehouseRepository->delete($warehouse);
+             $this->warehouseRepository->delete($warehouse);
         });
     }
 

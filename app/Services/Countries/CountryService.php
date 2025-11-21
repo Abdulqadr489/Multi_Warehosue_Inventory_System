@@ -38,7 +38,7 @@ class CountryService
     public function delete(Country $country)
     {
         return DB::transaction(function () use ($country) {
-            return $this->countries->delete($country);
+            $this->countries->delete($country);
         });
     }
 

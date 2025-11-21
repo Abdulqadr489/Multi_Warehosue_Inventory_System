@@ -9,12 +9,10 @@ use App\Models\User;
 use App\Repositories\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-
 class AuthController extends Controller
 {
-    use ApiResponse;
-
     public function register(RegisterRequest $request)
     {
         $data = $request->validated();

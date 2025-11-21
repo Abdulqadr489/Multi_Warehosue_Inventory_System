@@ -8,22 +8,20 @@ use App\Http\Controllers\Inventories\InventoryTransferController;
 use App\Http\Controllers\Products\ProductController;
 use App\Http\Controllers\Suppliers\SupplierController;
 use App\Http\Controllers\Warehouses\WarehouseController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+
 Route::middleware('auth:api')->group(function () {
-Route::apiResource('countries', CountryController::class);
-Route::apiResource('warehouses', WarehouseController::class);
-Route::apiResource('products', ProductController::class);
-Route::apiResource('suppliers', SupplierController::class);
+    Route::apiResource('countries', CountryController::class);
+    Route::apiResource('warehouses', WarehouseController::class);
+    Route::apiResource('products', ProductController::class);
+    Route::apiResource('suppliers', SupplierController::class);
 
-Route::apiResource('inventory_transactions', InventoryTransactionController::class);
-Route::apiResource('inventory_transfer', InventoryTransferController::class);
-
-
-Route::get('inventory/global-view', [InventoryReportController::class, 'globalView']);
-Route::get('reports/low_stock', [InventoryReportController::class, 'lowStock']);
+    Route::apiResource('inventory_transactions', InventoryTransactionController::class);
+    Route::apiResource('inventory_transfer', InventoryTransferController::class);
+    Route::get('inventory/global-view', [InventoryReportController::class, 'globalView']);
+    Route::get('reports/low_stock', [InventoryReportController::class, 'lowStock']);
 });
 

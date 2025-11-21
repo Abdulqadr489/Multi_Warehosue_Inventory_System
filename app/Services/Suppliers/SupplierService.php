@@ -36,10 +36,10 @@ class SupplierService
 
     }
 
-    public function delete(Supplier $supplier)
+    public function delete(Supplier $supplier) : Supplier
     {
         return DB::transaction(function () use ($supplier){
-            return  $this->supplierRepository->delete($supplier);
+              $this->supplierRepository->delete($supplier);
         });
     }
 }

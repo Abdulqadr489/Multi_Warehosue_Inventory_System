@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Inventories;
 
+use App\Enums\TransactionType;
 use App\Models\Countries\Country;
 use App\Models\Inventories\Inventory;
 use App\Models\Product\Product;
@@ -55,7 +56,7 @@ class InventoryTransactionTest extends TestCase
             'warehouse_id'     => $this->warehouse->id,
             'supplier_id'      => $this->supplier->id,
             'quantity'         => 5,
-            'transaction_type' => 'IN',
+            'transaction_type' => TransactionType::IN->value,
             'date'             => now()->toISOString(),
             'minimum_quantity' => 5,
         ];
@@ -89,7 +90,7 @@ class InventoryTransactionTest extends TestCase
             'warehouse_id'     => $this->warehouse->id,
             'supplier_id'      => $this->supplier->id,
             'quantity'         => 7,
-            'transaction_type' => 'IN',
+            'transaction_type' => TransactionType::IN->value,
             'date'             => now()->toISOString(),
             'minimum_quantity' => 5,
 
@@ -162,7 +163,7 @@ class InventoryTransactionTest extends TestCase
             'warehouse_id'     => $this->warehouse->id,
             'supplier_id'      => $this->supplier->id,
             'quantity'         => 10,
-            'transaction_type' => 'OUT',
+            'transaction_type' => TransactionType::OUT->value,
             'date'             => now()->toISOString(),
             'minimum_quantity' => 5,
 

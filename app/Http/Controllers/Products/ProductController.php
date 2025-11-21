@@ -10,11 +10,11 @@ use App\Models\Product\Product;
 use App\Repositories\Traits\ApiResponse;
 use App\Services\Products\ProductService;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class ProductController extends Controller
 {
-    use ApiResponse;
-
     public function __construct(protected ProductService $productService)
     {}
 
@@ -34,9 +34,9 @@ class ProductController extends Controller
             $filters = $request->validated();
 
             $products = $this->productService->list($filters, $perPage);
-            return $this->success($products, 'Product fetched successfully.',200);
+            return $this->success($products, 'Product fetched successfully.');
         }catch (\Exception $e){
-            return $this->error("An unexpected error occurred",500, $e->getMessage(),);
+            return $this->error("An unexpected error occurred",500, $e->getMessage(),200);
         }
     }
 
@@ -76,7 +76,7 @@ class ProductController extends Controller
         try {
             $validated = $request->validated();
             $product = $this->productService->update($product,$validated);
-            return $this->success($product, 'Product updated successfully.');
+            return $this->success($product, 'Product updated successfully.',202);
         }catch (\Exception $e){
             return $this->error("Error", 500 ,$e->getMessage());
         }
@@ -90,7 +90,7 @@ class ProductController extends Controller
     {
         try {
             $this->productService->delete($product);
-            return $this->success($product, 'Product deleted successfully.');
+            return $this->success($product, 'Product deleted successfully.', 204);
         }catch (\Exception $e){
             return $this->error("Error", $e->getMessage());
         }

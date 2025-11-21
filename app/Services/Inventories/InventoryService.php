@@ -2,6 +2,7 @@
 
 namespace App\Services\Inventories;
 
+use App\Enums\TransactionType;
 use App\Events\LowStockReached;
 use App\Models\Inventories\Inventory;
 use App\Models\Inventories\InventoryTransaction;
@@ -35,22 +36,22 @@ class InventoryService
             $supplierId = $data['supplier_id'] ?? null;
             $sourceMinQty =  $data['minimum_quantity'];
 
-            $outTransaction = $this->CreateTransactionRecord([
+            $outTransaction = $this->createTransactionRecord([
                 'product_id'       => $productId,
                 'warehouse_id'     => $fromId,
                 'supplier_id'      => $supplierId,
                 'quantity'         => $quantity,
-                'transaction_type' => 'OUT',
+                'transaction_type' => TransactionType::OUT->value,
                 'date'             => $date,
                 'minimum_quantity' => $sourceMinQty,
             ], $user);
 
-            $inTransaction = $this->CreateTransactionRecord([
+            $inTransaction = $this->createTransactionRecord([
                 'product_id'       => $productId,
                 'warehouse_id'     => $toId,
                 'supplier_id'      => $supplierId,
                 'quantity'         => $quantity,
-                'transaction_type' => 'IN',
+                'transaction_type' => TransactionType::IN->name,
                 'date'             => $date,
                 'minimum_quantity'  => $sourceMinQty,
 
@@ -68,11 +69,11 @@ class InventoryService
     public function createTransaction(array $data,User $user)
     {
         return DB::transaction(function () use ($data, $user) {
-            return  $this->CreateTransactionRecord($data,$user);
+            return  $this->createTransactionRecord($data,$user);
         });
     }
 
-    protected function CreateTransactionRecord(array $data, User $user)
+    protected function createTransactionRecord(array $data, User $user)
     {
         $productId = $data['product_id'];
         $warehouseId = $data['warehouse_id'];
@@ -82,7 +83,7 @@ class InventoryService
         $supplierId = $data['supplier_id'] ?? null;
         $minimumQuantity = (float)$data['minimum_quantity'];
 
-        if (!in_array($type, ['IN', 'OUT'], true)) {
+        if (!in_array($type, [TransactionType::IN->value, TransactionType::OUT->value], true)) {
             throw new \InvalidArgumentException('Invalid transaction type, must be IN or OUT.');
         }
 
@@ -121,7 +122,7 @@ class InventoryService
         $query = Inventory::query()
             ->with('product')
             ->selectRaw('product_id, SUM(quantity) as total_quantity')
-            ->groupBy('product_id');
+        ->groupBy('product_id');
 
         if (!empty($filters['warehouse_id'])) {
             $query->where('warehouse_id', $filters['warehouse_id']);
@@ -192,7 +193,7 @@ class InventoryService
                     ->with('supplier')
                     ->where('product_id', $inventory->product_id)
                     ->where('warehouse_id', $inventory->warehouse_id)
-                    ->where('transaction_type', 'IN')
+                    ->where('transaction_type', TransactionType::IN)
                     ->whereNotNull('supplier_id')
                     ->orderByDesc('date')
                     ->first();
@@ -222,7 +223,7 @@ class InventoryService
 
     protected function adjustInventory(Inventory $inventory, string $type, float $quantity): Inventory
     {
-        if ($type === 'IN') {
+        if ($type === TransactionType::IN->name) {
             $inventory->quantity += $quantity;
         } else {
             if ($inventory->quantity < $quantity) {
